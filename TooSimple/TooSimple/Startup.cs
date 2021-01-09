@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TooSimple.DataAccessors;
+using TooSimple.Managers;
 
 namespace TooSimple
 {
@@ -36,6 +37,7 @@ namespace TooSimple
 
             services.Configure<AppSettings>(options => Configuration.GetSection("AppSettings").Bind(options));
             services.AddTransient<IPlaidDataAccessor, PlaidDataAccessor>();
+            services.AddTransient<IHomeManager, HomeManager>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();

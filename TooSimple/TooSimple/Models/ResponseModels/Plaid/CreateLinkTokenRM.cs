@@ -8,8 +8,8 @@ namespace TooSimple.Models.ResponseModels.Plaid
     public class CreateLinkTokenRM
     {
         public string Expiration { get; set; }
-        public string LinkToken { get; set; }
-        public string RequestId { get; set; }
+        public string Link_Token { get; set; }
+        public string Request_Id { get; set; }
 
     }
 }

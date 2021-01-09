@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <Folder Include="Models\ActionModels\" />
-    <Folder Include="Models\ViewModels\" />
-    <Folder Include="Managers\" />
   </ItemGroup>
 
 </Project>

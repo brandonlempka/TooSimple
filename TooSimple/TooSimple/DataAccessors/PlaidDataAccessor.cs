@@ -42,9 +42,27 @@ namespace TooSimple.DataAccessors
 
             var requestJson = JsonConvert.SerializeObject(dataModel);
             var url = _appSettings.PlaidBaseUrl + "link/token/create";
+
             var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
 
-            var responseModel = JsonConvert.DeserializeObject<CreateLinkTokenRM>(response);
+            return JsonConvert.DeserializeObject<CreateLinkTokenRM>(response);
+        }
+
+        public async Task<TokenExchangeRM> PublicTokenExchange(string publicToken)
+        {
+            var dataModel = new TokenExchangeDM
+            {
+                client_id = _appSettings.PlaidClientId,
+                secret = _appSettings.PlaidSecret,
+                public_token = publicToken
+            };
+
+            var requestJson = JsonConvert.SerializeObject(dataModel);
+            var url = _appSettings.PlaidBaseUrl + "item/public_token/exchange";
+
+            var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
+
+            var responseModel = JsonConvert.DeserializeObject<TokenExchangeRM>(response);
             return responseModel;
         }
     }

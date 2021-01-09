@@ -1,8 +1,37 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model TooSimple.Models.ViewModels.HomeVM
 
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<script type="text/javascript">
+    const handler = Plaid.create({
+        token: '@Model.LinkToken',
+        onSuccess: (public_token, metadata) => {
+            fetch('Home/PlaidLink', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    public_token: public_token,
+                    accounts: metadata.accounts,
+                    institution: metadata.institution,
+                    link_session_id: metadata.link_session_id
+                }),
+            });
+        },
+        onLoad: () => { },
+        onExit: (err, metadata) => { },
+        onEvent: (eventName, metadata) => { },
+        receivedRedirectUri: null,
+    });
+
+    function testFunction() {
+        handler.open();
+    }
+</script>
+
+<button onclick="testFunction()">Add Account</button>
