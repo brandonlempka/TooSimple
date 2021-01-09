@@ -16,11 +16,9 @@
 
 
   <ItemGroup>
-    <Folder Include="DataAccessors\" />
-    <Folder Include="Models\DataModels\" />
     <Folder Include="Models\ActionModels\" />
-    <Folder Include="Models\ResponseModels\" />
     <Folder Include="Models\ViewModels\" />
+    <Folder Include="Managers\" />
   </ItemGroup>
 
 </Project>

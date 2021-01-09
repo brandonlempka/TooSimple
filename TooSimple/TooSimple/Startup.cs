@@ -12,6 +12,7 @@ using TooSimple.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TooSimple.DataAccessors;
 
 namespace TooSimple
 {
@@ -32,6 +33,10 @@ namespace TooSimple
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.Configure<AppSettings>(options => Configuration.GetSection("AppSettings").Bind(options));
+            services.AddTransient<IPlaidDataAccessor, PlaidDataAccessor>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
