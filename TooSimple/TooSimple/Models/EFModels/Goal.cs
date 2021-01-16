@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class Goal
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string GoalId { get; set; }
         public string GoalName { get; set; }
         public decimal GoalAmount { get; set; }

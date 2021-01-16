@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class Expense
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string ExpenseId { get; set; }
         public string ExpenseName { get; set; }
         public long RecurrenceTimeFrame { get; set; }

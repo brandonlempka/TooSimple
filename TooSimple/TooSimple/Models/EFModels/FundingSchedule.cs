@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class FundingSchedule
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string FundingScheduleId { get; set; }
         public string FundingScheduleName { get; set; }
         public long Frequency { get; set; }

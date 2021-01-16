@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace TooSimple.Controllers
 
         public async Task<IActionResult> Index()
         {
+
             var dataModel = await _plaidDataAccessor.CreateLinkTokenAsync("123test");
             var viewModel = new HomeVM
             {
@@ -33,11 +35,6 @@ namespace TooSimple.Controllers
             };
 
             return View(viewModel);
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

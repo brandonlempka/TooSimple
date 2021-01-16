@@ -29,6 +29,8 @@ namespace TooSimple.Data
             modelBuilder.Entity<Goal>().ToTable("Goal");
             modelBuilder.Entity<Transaction>().ToTable("Transaction");
             modelBuilder.Entity<TransactionCategory>().ToTable("TransactionCategory");
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

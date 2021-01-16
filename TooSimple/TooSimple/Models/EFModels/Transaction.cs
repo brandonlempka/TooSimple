@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class Transaction
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string TransactionId { get; set; }
         public string PlaidTransactionId { get; set; }
         public string PlaidAccountId { get; set; }

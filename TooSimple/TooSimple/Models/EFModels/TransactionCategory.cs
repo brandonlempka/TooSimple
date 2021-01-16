@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class TransactionCategory
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Category { get; set; }
     }

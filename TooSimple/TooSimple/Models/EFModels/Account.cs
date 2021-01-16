@@ -8,7 +8,7 @@ namespace TooSimple.Models.EFModels
 {
     public class Account
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
         public int PlaidAccountId { get; set; }
