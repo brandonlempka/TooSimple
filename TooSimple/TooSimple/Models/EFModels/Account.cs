@@ -11,6 +11,7 @@ namespace TooSimple.Models.EFModels
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
+        public string UserAccountId { get; set; }
         public int PlaidAccountId { get; set; }
         public int Mask { get; set; }
         public string Name { get; set; }
@@ -18,6 +19,7 @@ namespace TooSimple.Models.EFModels
         public decimal? CurrentBalance { get; set; }
         public decimal? AvailableBalance { get; set; }
         public string CurrencyCode { get; set; }
+        public string AccessToken { get; set; }
         public ICollection<Transaction> Transactions { get; set; }
     }
 }
