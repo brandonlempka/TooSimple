@@ -106,6 +106,25 @@ namespace TooSimple.Managers
                 return StatusRM.CreateError(genericError);
             }
 
+            var account = await _plaidDataAccessor.GetAccountBalancesAsync(responseModel.Access_token);
+
+            if (account == null)
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var newAccount = account.accounts.Select(x => new AccountDM
+            {
+                AccessToken = responseModel.Access_token,
+                UserAccountId = userId,
+                AvailableBalance = x.balances.available,
+                CurrentBalance = x.balances.current,
+                PlaidAccountId = x.account_id,
+                CurrencyCode = x.balances.iso_currency_code,
+                Mask = x.mask,
+                Name = x.name,
+            });
+
             var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(newAccount);
 
             var transactionsRequest = new PlaidTransactionRequestModel
