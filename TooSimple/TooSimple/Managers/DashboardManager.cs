@@ -4,34 +4,59 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TooSimple.Data;
+using TooSimple.DataAccessors;
+using TooSimple.Models.DataModels;
+using TooSimple.Models.DataModels.Plaid;
+using TooSimple.Models.ResponseModels;
+using TooSimple.Models.ResponseModels.Plaid;
 using TooSimple.Models.ViewModels;
 
 namespace TooSimple.Managers
 {
     public class DashboardManager : IDashboardManager
     {
-        private ApplicationDbContext _db;
-        public DashboardManager(ApplicationDbContext db)
+        private IAccountDataAccessor _accountDataAccessor;
+        private IPlaidDataAccessor _plaidDataAccessor;
+
+        public DashboardManager(IAccountDataAccessor accountDataAccessor, IPlaidDataAccessor plaidDataAccessor)
         {
-            _db = db;
+            _accountDataAccessor = accountDataAccessor;
+            _plaidDataAccessor = plaidDataAccessor;
         }
 
         public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var viewModel = _db.Accounts.Select(a => new DashboardVM
+            var dataModel = await _accountDataAccessor.GetAccountDM(userId);
+
+            if (dataModel.AccessToken == null)
             {
-                AccessToken = a.AccessToken,
-                AccountId = a.AccountId,
-                AccountTypeId = a.AccountTypeId,
-                AvailableBalance = a.AvailableBalance,
-                PlaidAccountId = a.PlaidAccountId,
-                CurrencyCode = a.CurrencyCode,
-                CurrentBalance = a.CurrentBalance,
-                Mask = a.Mask,
-                Name = a.Name,
-                NickName = a.NickName,
-                Transactions = a.Transactions.Select(x => new TransactionListVM
+                var linkToken = await _plaidDataAccessor.CreateLinkTokenAsync(userId);
+                var emptyViewModel = new DashboardVM
+                {
+                    LinkToken = linkToken.Link_Token
+                };
+
+                return emptyViewModel;
+            }
+
+            var viewModel = new DashboardVM
+            {
+                AccessToken = dataModel.AccessToken,
+                AccountId = dataModel.AccountId,
+                AccountTypeId = dataModel.AccountTypeId,
+                AvailableBalance = dataModel.AvailableBalance,
+                PlaidAccountId = dataModel.PlaidAccountId,
+                CurrencyCode = dataModel.CurrencyCode,
+                CurrentBalance = dataModel.CurrentBalance,
+                Mask = dataModel.Mask,
+                Name = dataModel.Name,
+                NickName = dataModel.NickName
+            };
+
+            if (dataModel.Transactions.Any())
+            {
+                viewModel.Transactions = dataModel.Transactions.Select(x => new TransactionListVM
                 {
                     AccountOwner = x.AccountOwner,
                     Address = x.Address,
@@ -52,17 +77,52 @@ namespace TooSimple.Managers
                     TransactionCode = x.TransactionCode,
                     TransactionDate = x.TransactionDate,
                     TransactionId = x.TransactionId
-                })
-            });
+                });
 
-            
-            var viewModel = new DashboardVM
-            {
-                AccessToken = account.Select(x => x.AccessToken).ToString(),
-                
-            };
+            }
 
             return viewModel;
+        }
+
+        public async Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser)
+        {
+            var genericError = "Something went wrong while adding your account";
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (dataModel == null)
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var responseModel = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
+
+            if (string.IsNullOrWhiteSpace(responseModel.Access_token))
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var account = await _plaidDataAccessor.AddNewAccountAsync(responseModel.Access_token);
+
+            if (account == null)
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var newAccount = account.accounts.Select(x => new AccountDM
+            {
+                AccessToken = responseModel.Access_token,
+                UserAccountId = userId,
+                AvailableBalance = x.balances.available,
+                CurrentBalance = x.balances.current,
+                PlaidAccountId = x.account_id,
+                CurrencyCode = x.balances.iso_currency_code,
+                Mask = x.mask,
+                Name = x.name,
+            });
+
+            var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(newAccount);
+
+            return accountAddResponse;
         }
     }
 }

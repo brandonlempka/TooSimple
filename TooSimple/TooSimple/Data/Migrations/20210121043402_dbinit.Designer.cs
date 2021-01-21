@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TooSimple.Data;
 
 namespace TooSimple.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210121043402_dbinit")]
+    partial class dbinit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,8 +242,8 @@ namespace TooSimple.Data.Migrations
                     b.Property<decimal?>("CurrentBalance")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Mask")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Mask")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -249,8 +251,8 @@ namespace TooSimple.Data.Migrations
                     b.Property<string>("NickName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PlaidAccountId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PlaidAccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserAccountId")
                         .HasColumnType("nvarchar(max)");

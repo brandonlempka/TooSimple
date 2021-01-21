@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TooSimple.Models.ViewModels
+namespace TooSimple.Models.DataModels
 {
-    public class DashboardVM
+    public class AccountDM
     {
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
         public string PlaidAccountId { get; set; }
+        public string UserAccountId { get; set; }
         public string Mask { get; set; }
         public string Name { get; set; }
         public string NickName { get; set; }
@@ -17,8 +18,7 @@ namespace TooSimple.Models.ViewModels
         public decimal? AvailableBalance { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
-        public IEnumerable<TransactionListVM> Transactions { get; set; }
-        public string LinkToken { get; set; }
+        public IEnumerable<TransactionListDM> Transactions { get; set; }
 
     }
 }

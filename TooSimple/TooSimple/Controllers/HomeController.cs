@@ -44,11 +44,11 @@ namespace TooSimple.Controllers
         }
 
         [HttpPost]
-        public async void PlaidLink([FromBody]PublicTokenDM dataModel)
+        public async void PlaidLink([FromBody]PublicTokenRM dataModel)
         {
             if(!string.IsNullOrWhiteSpace(dataModel.public_token))
             {
-                var access_token = await _plaidDataAccessor.PublicTokenExchange(dataModel.public_token);
+                var access_token = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
                 Console.WriteLine(access_token.Access_token);
             }
         }

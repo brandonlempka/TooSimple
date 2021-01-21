@@ -40,6 +40,8 @@ namespace TooSimple
             services.AddTransient<IHomeManager, HomeManager>();
             services.AddTransient<IDashboardManager, DashboardManager>();
 
+            services.AddTransient<IAccountDataAccessor, AccountDataAccessor>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
 

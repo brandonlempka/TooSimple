@@ -6,7 +6,7 @@ using TooSimple.Models.DataModels.Plaid.TokenExchange;
 
 namespace TooSimple.Models.DataModels.Plaid
 {
-    public class PublicTokenDM
+    public class PublicTokenRM
     {
         public string public_token { get; set; }
         public IEnumerable<TEAccountsDM> accounts { get; set; }
