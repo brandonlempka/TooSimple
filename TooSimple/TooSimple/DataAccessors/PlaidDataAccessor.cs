@@ -8,6 +8,7 @@ using TooSimple.Models.ResponseModels.Plaid;
 using TooSimple.Extensions;
 using Newtonsoft.Json;
 using TooSimple.Models.ResponseModels;
+using TooSimple.Models.RequestModels;
 
 namespace TooSimple.DataAccessors
 {
@@ -67,7 +68,7 @@ namespace TooSimple.DataAccessors
             return responseModel;
         }
 
-        public async Task<PlaidAccountRequestRM> AddNewAccountAsync(string accessToken)
+        public async Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken)
         {
             var dataModel = new PlaidAccountRequestDM
             {
@@ -83,5 +84,31 @@ namespace TooSimple.DataAccessors
 
             return JsonConvert.DeserializeObject<PlaidAccountRequestRM>(response);
         }
+
+        public async Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel requestModel)
+        {
+            var dataModel = new PlaidTransactionRequestDM
+            {
+                accessToken = requestModel.AccessToken,
+                clientId = _appSettings.PlaidClientId,
+                secret = _appSettings.PlaidSecret,
+                start_date = requestModel.StartDate,
+                end_date = requestModel.EndDate,
+                options = new PlaidTransactionRequestOptionsDM
+                {
+                    account_ids = requestModel.AccountIds,
+                    count = requestModel.Count,
+                    offset = requestModel.Offset
+                }
+            };
+
+            var requestJson = JsonConvert.SerializeObject(dataModel);
+            var url = _appSettings.PlaidBaseUrl + "transactions/get";
+
+            var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
+
+            return JsonConvert.DeserializeObject<PlaidTransactionRequestRM>(response);
+        }
+
     }
 }

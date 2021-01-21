@@ -7,6 +7,7 @@ using TooSimple.Data;
 using TooSimple.DataAccessors;
 using TooSimple.Models.DataModels;
 using TooSimple.Models.DataModels.Plaid;
+using TooSimple.Models.RequestModels;
 using TooSimple.Models.ResponseModels;
 using TooSimple.Models.ResponseModels.Plaid;
 using TooSimple.Models.ViewModels;
@@ -54,6 +55,7 @@ namespace TooSimple.Managers
                 NickName = dataModel.NickName
             };
 
+            var transactionDataModel = await _
             if (dataModel.Transactions.Any())
             {
                 viewModel.Transactions = dataModel.Transactions.Select(x => new TransactionListVM
@@ -78,7 +80,6 @@ namespace TooSimple.Managers
                     TransactionDate = x.TransactionDate,
                     TransactionId = x.TransactionId
                 });
-
             }
 
             return viewModel;
@@ -101,7 +102,7 @@ namespace TooSimple.Managers
                 return StatusRM.CreateError(genericError);
             }
 
-            var account = await _plaidDataAccessor.AddNewAccountAsync(responseModel.Access_token);
+            var account = await _plaidDataAccessor.GetAccountBalancesAsync(responseModel.Access_token);
 
             if (account == null)
             {
@@ -121,6 +122,16 @@ namespace TooSimple.Managers
             });
 
             var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(newAccount);
+
+            var transactionsRequest = new PlaidTransactionRequestModel
+            {
+                AccessToken = responseModel.Access_token,
+                StartDate = DateTime.Now.AddDays(-90),
+            };
+
+            var transactions = await _plaidDataAccessor.GetTransactionsAsync(transactionsRequest);
+
+            var newTransactions = transactions.Select
 
             return accountAddResponse;
         }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.DataModels
 {
-    public class TransactionListDM
+    public class TransactionDM
     {
         public string TransactionId { get; set; }
         public string PlaidTransactionId { get; set; }

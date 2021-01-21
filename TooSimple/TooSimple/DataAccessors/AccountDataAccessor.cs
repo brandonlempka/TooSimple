@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace TooSimple.DataAccessors
                     Mask = data.Mask,
                     Name = data.Name,
                     NickName = data.NickName,
-                    Transactions = transactionData,
+                    Transactions = transactionData.ToList(),
                 };
 
                 return dataModel;
@@ -117,6 +118,43 @@ namespace TooSimple.DataAccessors
 
                     await context.SaveChangesAsync();
                     return StatusRM.CreateSuccess(null, "Successfully updated account.");
+                }
+            }
+            catch(Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
+        }
+
+        public async Task<StatusRM> SavePlaidTransactionData(IEnumerable<TransactionDM> dataModel)
+        {
+            try
+            {
+                using (var context = _db)
+                {
+                    foreach (var transaction in dataModel)
+                    {
+                        var sql = @"MERGE INTO Transactions
+                                    USING 
+                                    (
+                                       SELECT   @PlaidTransactionId as Id
+                            
+                                    ) AS entity
+                                    ON  Transaction.PlaidTransactionId = entity.Id
+                                    WHEN NOT MATCHED THEN
+                                        INSERT (PlaidTransactionId)
+                                        VALUES (@PlaidTransactionId)";
+
+                        object[] parameters =
+                        {
+                            new SqlParameter("@PlaidTransactionId", transaction.PlaidTransactionId)
+                        };
+
+                        await context.Database.ExecuteSqlRawAsync(sql, parameters);
+                    }
+
+                    //await context.SaveChangesAsync();
+                    return StatusRM.CreateSuccess(null, "Successfully updated transactions.");
                 }
             }
             catch(Exception ex)

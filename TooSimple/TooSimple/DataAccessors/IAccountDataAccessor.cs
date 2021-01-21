@@ -12,5 +12,6 @@ namespace TooSimple.DataAccessors
     {
         Task<AccountDM> GetAccountDM(string accountId);
         Task<StatusRM> SavePlaidAccountData(IEnumerable<AccountDM> dataModel);
+        Task<StatusRM> SavePlaidTransactionData(IEnumerable<TransactionDM> dataModel);
     }
 }

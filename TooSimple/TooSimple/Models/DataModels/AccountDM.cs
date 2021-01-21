@@ -18,7 +18,5 @@ namespace TooSimple.Models.DataModels
         public decimal? AvailableBalance { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
-        public IEnumerable<TransactionListDM> Transactions { get; set; }
-
     }
 }
