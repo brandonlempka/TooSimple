@@ -28,10 +28,7 @@ namespace TooSimple.DataAccessors
 
             if (data == null)
             {
-                return new AccountDM
-                {
-                    Transactions = Enumerable.Empty<TransactionListDM>()
-                };
+                return new AccountDM();
             }
 
             using (var context = _db)
@@ -73,7 +70,6 @@ namespace TooSimple.DataAccessors
                     Mask = data.Mask,
                     Name = data.Name,
                     NickName = data.NickName,
-                    Transactions = transactionData.ToList(),
                 };
 
                 return dataModel;

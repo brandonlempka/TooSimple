@@ -89,8 +89,8 @@ namespace TooSimple.DataAccessors
         {
             var dataModel = new PlaidTransactionRequestDM
             {
-                accessToken = requestModel.AccessToken,
-                clientId = _appSettings.PlaidClientId,
+                access_token = requestModel.AccessToken,
+                client_id = _appSettings.PlaidClientId,
                 secret = _appSettings.PlaidSecret,
                 start_date = requestModel.StartDate,
                 end_date = requestModel.EndDate,
@@ -109,6 +109,5 @@ namespace TooSimple.DataAccessors
 
             return JsonConvert.DeserializeObject<PlaidTransactionRequestRM>(response);
         }
-
     }
 }

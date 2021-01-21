@@ -14,6 +14,6 @@ namespace TooSimple.DataAccessors
         Task<CreateLinkTokenRM> CreateLinkTokenAsync(string userId);
         Task<TokenExchangeRM> PublicTokenExchangeAsync(string publicToken);
         Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken);
-        Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel);
+        Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel requestModel);
     }
 }
