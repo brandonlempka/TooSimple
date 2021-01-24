@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TooSimple.Data;
 
 namespace TooSimple.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210122220636_remve plaid tx id")]
+    partial class remveplaidtxid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,6 +224,7 @@ namespace TooSimple.Data.Migrations
             modelBuilder.Entity("TooSimple.Models.EFModels.Account", b =>
                 {
                     b.Property<string>("AccountId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AccessToken")
@@ -246,6 +249,9 @@ namespace TooSimple.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NickName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlaidAccountId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserAccountId")
@@ -345,7 +351,7 @@ namespace TooSimple.Data.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("AuthorizedDate")
+                    b.Property<DateTime>("AuthorizedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ByOrderOf")
@@ -390,7 +396,7 @@ namespace TooSimple.Data.Migrations
                     b.Property<string>("PaymentProcessor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("Pending")
+                    b.Property<bool>("Pending")
                         .HasColumnType("bit");
 
                     b.Property<string>("PendingTransactionId")
@@ -423,7 +429,7 @@ namespace TooSimple.Data.Migrations
                     b.Property<string>("TransactionCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("TransactionDate")
+                    b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("TransactionType")

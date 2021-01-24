@@ -21,10 +21,10 @@ namespace TooSimple.Models.ResponseModels.Plaid
         public PlaidPaymentMetaRM? payment_meta { get; set; }
         public string payment_channel { get; set; }
         public bool pending { get; set; }
-        public object pending_transaction_id { get; set; }
+        public string pending_transaction_id { get; set; }
         public string account_owner { get; set; }
         public string transaction_id { get; set; }
-        public object transaction_code { get; set; }
+        public string transaction_code { get; set; }
         public string transaction_type { get; set; }
     }
 }

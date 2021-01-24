@@ -8,11 +8,10 @@ namespace TooSimple.Models.DataModels
     public class TransactionListDM
     {
         public string TransactionId { get; set; }
-        public string PlaidTransactionId { get; set; }
         public string PlaidAccountId { get; set; }
         public string AccountOwner { get; set; }
         public decimal Amount { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public DateTime? TransactionDate { get; set; }
         public string CurrencyCode { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
@@ -22,7 +21,7 @@ namespace TooSimple.Models.DataModels
         public string MerchantName { get; set; }
         public string Name { get; set; }
         public string PaymentMethod { get; set; }
-        public bool Pending { get; set; }
+        public bool? Pending { get; set; }
         public string TransactionCode { get; set; }
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }

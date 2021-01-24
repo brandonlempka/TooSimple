@@ -41,13 +41,14 @@ namespace TooSimple.Managers
                 return emptyViewModel;
             }
 
+            var updateResponse = await UpdateAccountDbAsync(userId, dataModel.AccessToken);
+
             var viewModel = new DashboardVM
             {
                 AccessToken = dataModel.AccessToken,
                 AccountId = dataModel.AccountId,
                 AccountTypeId = dataModel.AccountTypeId,
                 AvailableBalance = dataModel.AvailableBalance,
-                PlaidAccountId = dataModel.PlaidAccountId,
                 CurrencyCode = dataModel.CurrencyCode,
                 CurrentBalance = dataModel.CurrentBalance,
                 Mask = dataModel.Mask,
@@ -55,36 +56,8 @@ namespace TooSimple.Managers
                 NickName = dataModel.NickName
             };
 
-            var transactionsRequest = new PlaidTransactionRequestModel
-            {
-                AccessToken = dataModel.AccessToken,
-                StartDate = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd"),
-            };
-
-            var transactionDataModel = await _plaidDataAccessor.GetTransactionsAsync(transactionsRequest);
-
-            if (transactionDataModel.transactions.Any())
-            {
-                viewModel.Transactions = transactionDataModel.transactions.Select(x => new TransactionListVM
-                {
-                    AccountOwner = x.account_owner,
-                    Address = x.location.address,
-                    Amount = x.amount,
-                    PlaidAccountId = x.account_id,
-                    City = x.location.city,
-                    Country = x.location.country,
-                    CurrencyCode = x.iso_currency_code,
-                    MerchantName = x.merchant_name,
-                    Name = x.name,
-                    PaymentMethod = x.payment_channel,
-                    Pending = x.pending,
-                    PlaidTransactionId = x.transaction_id,
-                    PostalCode = x.location.postal_code,
-                    Region = x.location.region,
-                    TransactionCode = x.transaction_code.ToString(),
-                    TransactionDate = Convert.ToDateTime(x.date),
-                });
-            }
+            if (!updateResponse.Success)
+                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts";
 
             return viewModel;
         }
@@ -106,7 +79,15 @@ namespace TooSimple.Managers
                 return StatusRM.CreateError(genericError);
             }
 
-            var account = await _plaidDataAccessor.GetAccountBalancesAsync(responseModel.Access_token);
+            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token);
+
+            return refreshResponse;
+        }
+
+        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken)
+        {
+            var genericError = "Something went wrong while contacting Plaid.";
+            var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken);
 
             if (account == null)
             {
@@ -115,11 +96,11 @@ namespace TooSimple.Managers
 
             var newAccount = account.accounts.Select(x => new AccountDM
             {
-                AccessToken = responseModel.Access_token,
+                AccessToken = accessToken,
                 UserAccountId = userId,
                 AvailableBalance = x.balances.available,
                 CurrentBalance = x.balances.current,
-                PlaidAccountId = x.account_id,
+                AccountId = x.account_id,
                 CurrencyCode = x.balances.iso_currency_code,
                 Mask = x.mask,
                 Name = x.name,
@@ -127,41 +108,50 @@ namespace TooSimple.Managers
 
             var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(newAccount);
 
+            if (!string.IsNullOrWhiteSpace(accountAddResponse.ErrorMessage))
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
             var transactionsRequest = new PlaidTransactionRequestModel
             {
-                AccessToken = responseModel.Access_token,
+                AccessToken = accessToken,
                 StartDate = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd"),
             };
 
             var transactions = await _plaidDataAccessor.GetTransactionsAsync(transactionsRequest);
+            var transactionsAddResponse = new StatusRM();
 
-            var newTransactions = transactions.transactions.Select(x => new TransactionDM
+                var newTransactions = transactions.transactions.Select(x => new TransactionDM
+                {
+                    AccountOwner = x.account_owner,
+                    Address = x.location.address,
+                    Amount = x.amount,
+                    PlaidAccountId = x.account_id,
+                    UserAccountId = userId,
+                    City = x.location.city,
+                    Country = x.location.country,
+                    CurrencyCode = x.iso_currency_code,
+                    MerchantName = x.merchant_name,
+                    Name = x.name,
+                    Pending = x.pending,
+                    PostalCode = x.location.postal_code,
+                    Region = x.location.region,
+                    TransactionDate = Convert.ToDateTime(x.date),
+                    TransactionCode = x.transaction_code,
+                    TransactionId = x.transaction_id
+                }).ToList();
+
+                transactionsAddResponse = await _accountDataAccessor.SavePlaidTransactionData(newTransactions);
+
+            if (transactionsAddResponse.Success == true && accountAddResponse.Success == true)
             {
-                AccountOwner = x.account_owner,
-                Address = x.location.address,
-                Amount = x.amount,
-                PlaidAccountId = x.account_id,
-                UserAccountId = userId,
-                City = x.location.city,
-                Country = x.location.country,
-                CurrencyCode = x.iso_currency_code,
-                MerchantName = x.merchant_name,
-                Name = x.name,
-                Pending = x.pending,
-                PlaidTransactionId = x.transaction_id,
-                PostalCode = x.location.postal_code,
-                Region = x.location.region,
-                TransactionDate = Convert.ToDateTime(x.date),
-                TransactionCode = x.transaction_code.ToString()
-            });
-
-            return accountAddResponse;
+                return StatusRM.CreateSuccess(null, "Successfully refreshed data.");
+            }
+            else
+            {
+                return StatusRM.CreateError(genericError);
+            }
         }
-
-        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken)
-        {
-
-        }
-
     }
 }

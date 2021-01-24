@@ -29,7 +29,7 @@ namespace TooSimple.Controllers
         }
 
         [HttpPost]
-        public async void PlaidLink([FromBody] PublicTokenRM dataModel)
+        public async Task PlaidLink([FromBody] PublicTokenRM dataModel)
         {
             ClaimsPrincipal currentUser = this.User;
 

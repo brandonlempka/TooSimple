@@ -20,7 +20,7 @@ else
     const handler = Plaid.create({
         token: '@Model.LinkToken',
         onSuccess: (public_token, metadata) => {
-            fetch('PlaidLink', {
+            fetch('/Dashboard/PlaidLink', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",

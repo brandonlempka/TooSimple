@@ -8,7 +8,6 @@ namespace TooSimple.Models.ViewModels
     public class TransactionListVM
     {
         public string TransactionId { get; set; }
-        public string PlaidTransactionId { get; set; }
         public string PlaidAccountId { get; set; }
         public string AccountOwner { get; set; }
         public decimal? Amount { get; set; }

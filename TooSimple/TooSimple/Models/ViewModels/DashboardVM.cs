@@ -9,7 +9,6 @@ namespace TooSimple.Models.ViewModels
     {
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
-        public string PlaidAccountId { get; set; }
         public string Mask { get; set; }
         public string Name { get; set; }
         public string NickName { get; set; }
@@ -19,6 +18,6 @@ namespace TooSimple.Models.ViewModels
         public string AccessToken { get; set; }
         public IEnumerable<TransactionListVM> Transactions { get; set; }
         public string LinkToken { get; set; }
-
+        public string ErrorMessage { get; set; }
     }
 }

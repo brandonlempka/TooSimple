@@ -9,7 +9,6 @@ namespace TooSimple.Models.DataModels
     {
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
-        public string PlaidAccountId { get; set; }
         public string UserAccountId { get; set; }
         public string Mask { get; set; }
         public string Name { get; set; }

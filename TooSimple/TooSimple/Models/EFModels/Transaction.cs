@@ -8,15 +8,13 @@ namespace TooSimple.Models.EFModels
 {
     public class Transaction
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string TransactionId { get; set; }
-        public string PlaidTransactionId { get; set; }
         public string PlaidAccountId { get; set; }
         public string AccountOwner { get; set; }
         public decimal Amount { get; set; }
-        public DateTime AuthorizedDate { get; set; }
+        public DateTime? AuthorizedDate { get; set; }
         public ICollection<TransactionCategory> Categories { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public DateTime? TransactionDate { get; set; }
         public string CurrencyCode { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
@@ -37,7 +35,7 @@ namespace TooSimple.Models.EFModels
         public string PpdId { get; set; }
         public string Reason { get; set; }
         public string ReferenceNumber { get; set; }
-        public bool Pending { get; set; }
+        public bool? Pending { get; set; }
         public string PendingTransactionId { get; set; }
         public string TransactionCode { get; set; }
         public string TransactionType { get; set; }
