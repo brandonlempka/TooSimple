@@ -19,11 +19,13 @@ namespace TooSimple.Managers
     {
         private IAccountDataAccessor _accountDataAccessor;
         private IPlaidDataAccessor _plaidDataAccessor;
+        private IBudgetingDataAccessor _budgetingDataAccessor;
 
-        public DashboardManager(IAccountDataAccessor accountDataAccessor, IPlaidDataAccessor plaidDataAccessor)
+        public DashboardManager(IAccountDataAccessor accountDataAccessor, IPlaidDataAccessor plaidDataAccessor, IBudgetingDataAccessor budgetingDataAccessor)
         {
             _accountDataAccessor = accountDataAccessor;
             _plaidDataAccessor = plaidDataAccessor;
+            _budgetingDataAccessor = budgetingDataAccessor;
         }
 
         public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
@@ -164,27 +166,27 @@ namespace TooSimple.Managers
             var transactions = await _plaidDataAccessor.GetTransactionsAsync(transactionsRequest);
             var transactionsAddResponse = new StatusRM();
 
-                var newTransactions = transactions.transactions.Select(x => new TransactionDM
-                {
-                    AccountOwner = x.account_owner,
-                    Address = x.location.address,
-                    Amount = x.amount,
-                    AccountId = x.account_id,
-                    UserAccountId = userId,
-                    City = x.location.city,
-                    Country = x.location.country,
-                    CurrencyCode = x.iso_currency_code,
-                    MerchantName = x.merchant_name,
-                    Name = x.name,
-                    Pending = x.pending,
-                    PostalCode = x.location.postal_code,
-                    Region = x.location.region,
-                    TransactionDate = Convert.ToDateTime(x.date),
-                    TransactionCode = x.transaction_code,
-                    TransactionId = x.transaction_id
-                }).ToList();
+            var newTransactions = transactions.transactions.Select(x => new TransactionDM
+            {
+                AccountOwner = x.account_owner,
+                Address = x.location.address,
+                Amount = x.amount,
+                AccountId = x.account_id,
+                UserAccountId = userId,
+                City = x.location.city,
+                Country = x.location.country,
+                CurrencyCode = x.iso_currency_code,
+                MerchantName = x.merchant_name,
+                Name = x.name,
+                Pending = x.pending,
+                PostalCode = x.location.postal_code,
+                Region = x.location.region,
+                TransactionDate = Convert.ToDateTime(x.date),
+                TransactionCode = x.transaction_code,
+                TransactionId = x.transaction_id
+            }).ToList();
 
-                transactionsAddResponse = await _accountDataAccessor.SavePlaidTransactionData(newTransactions);
+            transactionsAddResponse = await _accountDataAccessor.SavePlaidTransactionData(newTransactions);
 
             if (transactionsAddResponse.Success == true && accountAddResponse.Success == true)
             {
@@ -244,7 +246,7 @@ namespace TooSimple.Managers
             };
         }
 
-        public async Task<StatusRM> UpdateAccountAsync(DashboardEditAccountAM actionModel)
+        public async Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel)
         {
             return await _accountDataAccessor.UpdateAccountAsync(actionModel);
         }
@@ -252,6 +254,59 @@ namespace TooSimple.Managers
         public async Task<StatusRM> DeleteAccountAsync(string accountId)
         {
             return await _accountDataAccessor.DeleteAccountAsync(accountId);
+        }
+
+        public async Task<DashboardGoalsVM> GetGoalsVMAsync(ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+
+            return new DashboardGoalsVM
+            {
+                Goals = dataModel.Goals.Select(x => new DashboardGoalsListVM
+                {
+                    GoalAmount = x.GoalAmount,
+                    UserAccountId = x.UserAccountId,
+                    CurrentBalance = x.CurrentBalance,
+                    DesiredCompletionDate = x.DesiredCompletionDate,
+                    GoalId = x.GoalId,
+                    GoalName = x.GoalName
+                })
+            };
+        }
+
+        public async Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            if (goalId == "")
+                return new DashboardSaveGoalVM
+                {
+                    UserAccountId = userId
+                };
+
+            var existingAccount = await _budgetingDataAccessor.GetGoalDMAsync(goalId);
+
+            if (existingAccount == null)
+                return new DashboardSaveGoalVM
+                {
+                    UserAccountId = userId
+                };
+
+            return new DashboardSaveGoalVM
+            {
+                GoalAmount = existingAccount.GoalAmount,
+                CurrentBalance = existingAccount.CurrentBalance,
+                DesiredCompletionDate = existingAccount.DesiredCompletionDate,
+                GoalId = existingAccount.GoalId,
+                GoalName = existingAccount.GoalName,
+                UserAccountId = userId
+            };
+        }
+
+        public async Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel)
+        {
+            return await _budgetingDataAccessor.SaveGoalAsync(actionModel);
         }
     }
 }

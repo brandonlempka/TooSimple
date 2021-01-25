@@ -36,11 +36,14 @@ namespace TooSimple
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.Configure<AppSettings>(options => Configuration.GetSection("AppSettings").Bind(options));
+            
             services.AddTransient<IPlaidDataAccessor, PlaidDataAccessor>();
+            services.AddTransient<IAccountDataAccessor, AccountDataAccessor>();
+            services.AddTransient<IBudgetingDataAccessor, BudgetingDataAccessor>();
+
             services.AddTransient<IHomeManager, HomeManager>();
             services.AddTransient<IDashboardManager, DashboardManager>();
 
-            services.AddTransient<IAccountDataAccessor, AccountDataAccessor>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();

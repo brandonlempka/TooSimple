@@ -23,7 +23,7 @@ namespace TooSimple.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ClaimsPrincipal currentUser = this.User;
+            var currentUser = this.User;
             var viewModel = await _dashboardManager.GetDashboardVMAsync(currentUser);
 
             return View("~/Views/Dashboard/Dashboard.cshtml", viewModel);
@@ -32,7 +32,7 @@ namespace TooSimple.Controllers
         [HttpPost]
         public async Task PlaidLink([FromBody] PublicTokenRM dataModel)
         {
-            ClaimsPrincipal currentUser = this.User;
+            var currentUser = this.User;
 
             if (!string.IsNullOrWhiteSpace(dataModel.public_token))
             {
@@ -42,23 +42,25 @@ namespace TooSimple.Controllers
 
         public async Task<IActionResult> Accounts()
         {
-            ClaimsPrincipal currentUser = this.User;
+            var currentUser = this.User;
+
             var viewModel = await _dashboardManager.GetDashboardAccountsVMAsync(currentUser);
             return View("~/Views/Dashboard/DashboardAccounts.cshtml", viewModel);
         }
 
         public async Task<IActionResult> LoadAccount(string Id)
         {
-            ClaimsPrincipal currentUser = this.User;
+            var currentUser = this.User;
+
             var viewModel = await _dashboardManager.GetIndividualAccountVMAsync(Id, currentUser);
             return View("~/Views/Dashboard/DashboardEditAccount.cshtml", viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveAccount(DashboardEditAccountAM actionModel)
+        public async Task<IActionResult> SaveAccount(DashboardSaveAccountAM actionModel)
         {
             var response = await _dashboardManager.UpdateAccountAsync(actionModel);
-            return Json(response);
+            return RedirectToAction("Accounts", response);
         }
 
         public async Task<IActionResult> DeleteAccount(string Id)
@@ -66,5 +68,28 @@ namespace TooSimple.Controllers
             var response = await _dashboardManager.DeleteAccountAsync(Id);
             return RedirectToAction("Accounts", response);
         }
+
+        public async Task<IActionResult> Goals()
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetGoalsVMAsync(currentUser);
+
+            return View("~/Views/Dashboard/DashboardGoals.cshtml", viewModel);
+        }
+
+        public async Task<IActionResult> AddEditGoal(string goalId = "")
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetSaveGoalVMAsync(goalId, currentUser);
+            return View("~/Views/Dashboard/DashboardEditGoal.cshtml", viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveGoal(DashboardSaveGoalAM actionModel)
+        {
+            var response = await _dashboardManager.UpdateGoalAsync(actionModel);
+            return Json(response);
+        }
+
     }
 }

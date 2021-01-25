@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TooSimple.Models.EFModels
+namespace TooSimple.Models.ViewModels
 {
-    public class Goal
+    public class DashboardGoalsListVM
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string GoalId { get; set; }
         public string UserAccountId { get; set; }
         public string GoalName { get; set; }

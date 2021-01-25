@@ -208,7 +208,6 @@ namespace TooSimple.DataAccessors
                                         , UnofficialCurrencyCode
                                         , SpendingFrom
                                         , InternalCategory
-                                        , AccountId
                                         , UserAccountId)
                                     VALUES (@TransactionId
                                         , @AccountId
@@ -230,7 +229,6 @@ namespace TooSimple.DataAccessors
                                         , @UnofficialCurrencyCode
                                         , @SpendingFrom
                                         , @InternalCategory
-                                        , @AccountId
                                         , @UserAccountId);";
 
                     object[] parameters =
@@ -255,7 +253,6 @@ namespace TooSimple.DataAccessors
                         new SqlParameter("@UnofficialCurrencyCode", DBExtensions.DBValue(transaction.CurrencyCode)),
                         new SqlParameter("@SpendingFrom", DBExtensions.DBValue(transaction.SpendingFrom)),
                         new SqlParameter("@InternalCategory", DBExtensions.DBValue(transaction.InternalCategory)),
-                        new SqlParameter("@AccountId", DBExtensions.DBValue(transaction.AccountId)),
                         new SqlParameter("@UserAccountId", DBExtensions.DBValue(transaction.UserAccountId)),
                     };
 
@@ -271,7 +268,7 @@ namespace TooSimple.DataAccessors
             }
         }
 
-        public async Task<StatusRM> UpdateAccountAsync(DashboardEditAccountAM actionModel)
+        public async Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel)
         {
             try
             {

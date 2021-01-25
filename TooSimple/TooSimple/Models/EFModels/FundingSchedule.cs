@@ -10,6 +10,7 @@ namespace TooSimple.Models.EFModels
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string FundingScheduleId { get; set; }
+        public string UserAccountId { get; set; }
         public string FundingScheduleName { get; set; }
         public long Frequency { get; set; }
         public DateTime FirstContributionDate { get; set; }

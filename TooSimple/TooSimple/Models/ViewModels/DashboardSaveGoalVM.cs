@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TooSimple.Models.EFModels
+namespace TooSimple.Models.ViewModels
 {
-    public class Goal
+    public class DashboardSaveGoalVM
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string GoalId { get; set; }
         public string UserAccountId { get; set; }
+
+        [Required(ErrorMessage = "Required")]
         public string GoalName { get; set; }
+        [Required(ErrorMessage = "Required")]
         public decimal GoalAmount { get; set; }
+        [Required(ErrorMessage = "Required")]
         public decimal CurrentBalance { get; set; }
+        [Required(ErrorMessage = "Required")]
         public DateTime DesiredCompletionDate { get; set; }
     }
 }

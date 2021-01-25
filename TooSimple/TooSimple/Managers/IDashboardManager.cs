@@ -17,7 +17,10 @@ namespace TooSimple.Managers
         Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser);
         Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser);
         Task<DashboardEditAccountVM> GetIndividualAccountVMAsync(string Id, ClaimsPrincipal currentUser);
-        Task<StatusRM> UpdateAccountAsync(DashboardEditAccountAM actionModel);
+        Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel);
+        Task<DashboardGoalsVM> GetGoalsVMAsync(ClaimsPrincipal currentUser);
         Task<StatusRM> DeleteAccountAsync(string accountId);
+        Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser);
+        Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel);
     }
 }

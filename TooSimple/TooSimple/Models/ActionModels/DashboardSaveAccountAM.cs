@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.ActionModels
 {
-    public class DashboardEditAccountAM
+    public class DashboardSaveAccountAM
     {
         public string AccountId { get; set; }
         public string NickName { get; set; }
