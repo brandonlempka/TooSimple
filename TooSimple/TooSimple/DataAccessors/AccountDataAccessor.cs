@@ -25,8 +25,8 @@ namespace TooSimple.DataAccessors
 
         public async Task<AccountDM> GetAccountDM(string accountId)
         {
-            var data = await _db.Accounts.FirstOrDefaultAsync(a => a.UserAccountId == accountId);
-
+            var data = await _db.Accounts.Where(a => a.UserAccountId == accountId).ToListAsync();
+            
             if (data == null)
             {
                 return new AccountDM();

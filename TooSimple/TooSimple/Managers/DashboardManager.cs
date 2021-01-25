@@ -66,12 +66,13 @@ namespace TooSimple.Managers
         {
             var genericError = "Something went wrong while adding your account";
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-
+            
             if (dataModel == null)
             {
                 return StatusRM.CreateError(genericError);
             }
 
+            var accountIds = dataModel.accounts.Select(x => x.id).ToArray();
             var responseModel = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
 
             if (string.IsNullOrWhiteSpace(responseModel.Access_token))
@@ -79,12 +80,12 @@ namespace TooSimple.Managers
                 return StatusRM.CreateError(genericError);
             }
 
-            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token);
+            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds);
 
             return refreshResponse;
         }
 
-        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken)
+        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken, string[] accountIds)
         {
             var genericError = "Something went wrong while contacting Plaid.";
             var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken);

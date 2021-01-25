@@ -68,13 +68,17 @@ namespace TooSimple.DataAccessors
             return responseModel;
         }
 
-        public async Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken)
+        public async Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken, string[] accountIds)
         {
             var dataModel = new PlaidAccountRequestDM
             {
                 access_token = accessToken,
                 client_id = _appSettings.PlaidClientId,
-                secret = _appSettings.PlaidSecret
+                secret = _appSettings.PlaidSecret,
+                options = new PlaidOptionsDM
+                {
+                    account_ids = accountIds
+                }
             };
 
             var requestJson = JsonConvert.SerializeObject(dataModel);
