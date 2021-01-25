@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using TooSimple.Data;
 using TooSimple.DataAccessors;
+using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels;
 using TooSimple.Models.DataModels.Plaid;
 using TooSimple.Models.RequestModels;
@@ -28,9 +29,9 @@ namespace TooSimple.Managers
         public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var dataModel = await _accountDataAccessor.GetAccountDM(userId);
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
 
-            if (dataModel.AccessToken == null)
+            if (!dataModel.Accounts.Any())
             {
                 var linkToken = await _plaidDataAccessor.CreateLinkTokenAsync(userId);
                 var emptyViewModel = new DashboardVM
@@ -41,23 +42,62 @@ namespace TooSimple.Managers
                 return emptyViewModel;
             }
 
-            var updateResponse = await UpdateAccountDbAsync(userId, dataModel.AccessToken);
+            var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
+                x => x.AccountId,
+                (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
+
+            var responseList = new List<StatusRM>();
+
+            foreach(var token in accountGroup)
+            {
+                var ids = token.AccountIds.ToArray();
+
+                var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids);
+                responseList.Add(newResponse);
+            }
+
+            var updatedData = await _accountDataAccessor.GetAccountDMAsync(userId);
+
+            var transactionList = new List<TransactionListVM>();
+
+            foreach(var account in updatedData.Accounts)
+            {
+                var transaction = account.Transactions.Select(x => new TransactionListVM
+                {
+                    AccountId = x.AccountId,
+                    AccountName = account.Name,
+                    AccountOwner = x.AccountOwner,
+                    Address = x.Address,
+                    Amount = x.Amount,
+                    City = x.City,
+                    Country = x.Country,
+                    CurrencyCode = x.CurrencyCode,
+                    InternalCategory = x.InternalCategory,
+                    MerchantName = x.MerchantName,
+                    Name = x.Name,
+                    PaymentMethod = x.PaymentMethod,
+                    Pending = x.Pending,
+                    PostalCode = x.PostalCode,
+                    Region = x.Region,
+                    SpendingFrom = x.SpendingFrom,
+                    TransactionCode = x.TransactionCode,
+                    TransactionDate = x.TransactionDate,
+                    TransactionId = x.TransactionId,
+                }).ToList();
+
+                transactionList.AddRange(transaction);
+
+            }
 
             var viewModel = new DashboardVM
             {
-                AccessToken = dataModel.AccessToken,
-                AccountId = dataModel.AccountId,
-                AccountTypeId = dataModel.AccountTypeId,
-                AvailableBalance = dataModel.AvailableBalance,
-                CurrencyCode = dataModel.CurrencyCode,
-                CurrentBalance = dataModel.CurrentBalance,
-                Mask = dataModel.Mask,
-                Name = dataModel.Name,
-                NickName = dataModel.NickName
+                CurrentBalance = updatedData.Accounts.Select(x => x.CurrentBalance).Sum(),
+                Transactions = transactionList
             };
 
-            if (!updateResponse.Success)
-                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts";
+            var failures = responseList.Where(x => x.Success != true);
+            if (failures.Any())
+                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts.";
 
             return viewModel;
         }
@@ -88,14 +128,14 @@ namespace TooSimple.Managers
         private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken, string[] accountIds)
         {
             var genericError = "Something went wrong while contacting Plaid.";
-            var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken);
+            var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken, accountIds);
 
             if (account == null)
             {
                 return StatusRM.CreateError(genericError);
             }
 
-            var newAccount = account.accounts.Select(x => new AccountDM
+            var plaidAccount = account.accounts.Select(x => new AccountDM
             {
                 AccessToken = accessToken,
                 UserAccountId = userId,
@@ -107,7 +147,7 @@ namespace TooSimple.Managers
                 Name = x.name,
             });
 
-            var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(newAccount);
+            var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(plaidAccount);
 
             if (!string.IsNullOrWhiteSpace(accountAddResponse.ErrorMessage))
             {
@@ -118,6 +158,7 @@ namespace TooSimple.Managers
             {
                 AccessToken = accessToken,
                 StartDate = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd"),
+                AccountIds = accountIds
             };
 
             var transactions = await _plaidDataAccessor.GetTransactionsAsync(transactionsRequest);
@@ -128,7 +169,7 @@ namespace TooSimple.Managers
                     AccountOwner = x.account_owner,
                     Address = x.location.address,
                     Amount = x.amount,
-                    PlaidAccountId = x.account_id,
+                    AccountId = x.account_id,
                     UserAccountId = userId,
                     City = x.location.city,
                     Country = x.location.country,
@@ -153,6 +194,64 @@ namespace TooSimple.Managers
             {
                 return StatusRM.CreateError(genericError);
             }
+        }
+
+        public async Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var linkToken = await _plaidDataAccessor.CreateLinkTokenAsync(userId);
+
+            if (!dataModel.Accounts.Any())
+            {
+                return new DashboardAccountsVM
+                {
+                    Accounts = Enumerable.Empty<DashboardAccountsListVM>(),
+                    LinkToken = linkToken.Link_Token
+                };
+            }
+
+            var viewModel = new DashboardAccountsVM
+            {
+                LinkToken = linkToken.Link_Token,
+                Accounts = dataModel.Accounts.Select(account => new DashboardAccountsListVM
+                {
+                    AccessToken = account.AccessToken,
+                    AccountId = account.AccountId,
+                    AvailableBalance = account.AvailableBalance,
+                    CurrentBalance = account.CurrentBalance,
+                    UserAccountId = account.UserAccountId,
+                    CurrencyCode = account.CurrencyCode,
+                    LastUpdated = account.LastUpdated,
+                    Name = account.Name,
+                    NickName = account.NickName
+                })
+            };
+
+            return viewModel;
+        }
+
+        public async Task<DashboardEditAccountVM> GetIndividualAccountVMAsync(string Id, ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId, Id);
+
+            var account = dataModel.Accounts.FirstOrDefault();
+            return new DashboardEditAccountVM
+            {
+                AccountId = account.AccountId,
+                NickName = account.NickName
+            };
+        }
+
+        public async Task<StatusRM> UpdateAccountAsync(DashboardEditAccountAM actionModel)
+        {
+            return await _accountDataAccessor.UpdateAccountAsync(actionModel);
+        }
+
+        public async Task<StatusRM> DeleteAccountAsync(string accountId)
+        {
+            return await _accountDataAccessor.DeleteAccountAsync(accountId);
         }
     }
 }

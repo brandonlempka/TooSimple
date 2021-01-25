@@ -9,7 +9,7 @@ namespace TooSimple.Models.DataModels
     {
         public string TransactionId { get; set; }
         public string ReferenceNumber { get; set; }
-        public string PlaidAccountId { get; set; }
+        public string AccountId { get; set; }
         public string AccountOwner { get; set; }
         public decimal? Amount { get; set; }
         public DateTime? TransactionDate { get; set; }

@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.DataModels.Plaid
 {
-    public class PlaidOptionsDM
+    public class PlaidAccountOptionsDM
     {
         public string[] account_ids { get; set; }
-        public int count { get; set; }
-        public int offset { get; set; }
+
     }
 }

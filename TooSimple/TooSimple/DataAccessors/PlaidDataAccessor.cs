@@ -75,7 +75,7 @@ namespace TooSimple.DataAccessors
                 access_token = accessToken,
                 client_id = _appSettings.PlaidClientId,
                 secret = _appSettings.PlaidSecret,
-                options = new PlaidOptionsDM
+                options = new PlaidAccountOptionsDM
                 {
                     account_ids = accountIds
                 }

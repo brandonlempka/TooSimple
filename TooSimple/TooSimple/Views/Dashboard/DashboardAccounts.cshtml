@@ -1,57 +1,44 @@
-﻿@model TooSimple.Models.ViewModels.DashboardVM
+﻿@model TooSimple.Models.ViewModels.DashboardAccountsVM
+<button onclick="startLink()">Add Account</button>
 
-@if (Model.LinkToken != null)
-{
-    <h2>Get started by adding an account</h2>
-    <button onclick="startLink()">Add Account</button>
-}
-else
-{
-    <p>Available Balance: $@Model.CurrentBalance</p>
-}
-
-@if (Model.Transactions.Any())
-{ 
-<table>
+<table class="table table-striped">
     <thead>
         <tr>
-            <th>
-                Date
-            </th>
-            <th>
-                Transaction
-            </th>
-            <th>
-                Amount
-            </th>
-            <th>
-                Spent From
-            </th>
+            <th>Account Name</th>
+            <th>Edit</th>
+            <th>Delete</th>
         </tr>
     </thead>
-    @foreach(var transaction in Model.Transactions)
+    @foreach(var account in Model.Accounts)
     {
         <tr>
             <td>
-                @transaction.TransactionDate
+                @account.Name
             </td>
             <td>
-                @transaction.MerchantName
+                <a href="~/Dashboard/LoadAccount?id=@account.AccountId">Edit</a>
             </td>
             <td>
-                @transaction.Amount
-            </td>
-            <td>
-                @transaction.SpendingFrom
+                <a href="~/Dashboard/DeleteAccount?id=@account.AccountId">Delete</a>
             </td>
         </tr>
     }
 </table>
-}
-else
-{
-    <p>No transactions were found for your accounts.</p>
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>

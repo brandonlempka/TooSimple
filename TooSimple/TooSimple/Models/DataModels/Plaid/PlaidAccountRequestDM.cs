@@ -10,6 +10,6 @@ namespace TooSimple.Models.DataModels.Plaid
         public string client_id { get; set; }
         public string secret { get; set; }
         public string access_token { get; set; }
-        public PlaidOptionsDM options { get; set; }
+        public PlaidAccountOptionsDM options { get; set; }
     }
 }
