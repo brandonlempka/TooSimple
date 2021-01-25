@@ -310,5 +310,9 @@ namespace TooSimple.DataAccessors
                 return StatusRM.CreateError(ex);
             }
         }
+        public async Task<TransactionDM> GetTransactionDMAsync(string transactionId)
+        {
+
+        }
     }
 }

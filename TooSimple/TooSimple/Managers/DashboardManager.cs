@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -307,6 +308,48 @@ namespace TooSimple.Managers
         public async Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel)
         {
             return await _budgetingDataAccessor.SaveGoalAsync(actionModel);
+        }
+        public async Task<DashboardEditTransactionVM> GetEditTransactionVMAsync(string transactionId, ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+
+
+            var dataModel = await _accountDataAccessor.GetTransactionDMAsync(transactionId);
+
+            var viewModel = new DashboardEditTransactionVM
+            {
+                SpendingFrom = new List<SelectListItem>(),
+                AccountId = dataModel.AccountId,
+                AccountOwner = dataModel.AccountOwner,
+                Address = dataModel.Address,
+                Amount = dataModel.Amount.GetValueOrDefault(),
+                UserAccountId = dataModel.UserAccountId,
+                City = dataModel.City,
+                Country = dataModel.Country,
+                CurrencyCode = dataModel.CurrencyCode,
+                TransactionDate = dataModel.TransactionDate,
+                InternalCategory = dataModel.InternalCategory,
+                MerchantName = dataModel.MerchantName,
+                Name = dataModel.Name,
+                Pending = dataModel.Pending,
+                TransactionId = dataModel.TransactionId,
+            };
+
+            if (goals.Goals.Any())
+            {
+                foreach(var goal in goals.Goals)
+                {
+                    viewModel.SpendingFrom.Add(new SelectListItem
+                    {
+                        Text = goal.GoalName,
+                        Value = goal.GoalId
+                    });
+                }
+            }
+
+            return viewModel;
         }
     }
 }

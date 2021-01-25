@@ -40,6 +40,13 @@ namespace TooSimple.Controllers
             }
         }
 
+        public async Task<IActionResult> LoadTransaction(string transactionId)
+        {
+            var currentUser = this.User;
+
+
+        }
+
         public async Task<IActionResult> Accounts()
         {
             var currentUser = this.User;
