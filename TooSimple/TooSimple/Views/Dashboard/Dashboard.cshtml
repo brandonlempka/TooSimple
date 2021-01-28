@@ -15,18 +15,11 @@ else
 <table>
     <thead>
         <tr>
-            <th>
-                Date
-            </th>
-            <th>
-                Transaction
-            </th>
-            <th>
-                Amount
-            </th>
-            <th>
-                Spent From
-            </th>
+            <th>Date</th>
+            <th>Transaction</th>
+            <th>Amount</th>
+            <th>Spent From</th>
+            <th>Edit Transaction</th>
         </tr>
     </thead>
     @foreach(var transaction in Model.Transactions)
@@ -43,6 +36,9 @@ else
             </td>
             <td>
                 @transaction.SpendingFrom
+            </td>
+            <td>
+                <a href="~/Dashboard/LoadTransaction?id=@transaction.TransactionId">Edit</a>
             </td>
         </tr>
     }

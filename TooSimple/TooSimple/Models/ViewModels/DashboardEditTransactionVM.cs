@@ -27,7 +27,8 @@ namespace TooSimple.Models.ViewModels
         public string Name { get; set; }
         public bool? Pending { get; set; }
         public string TransactionType { get; set; }
-        public List<SelectListItem> SpendingFrom { get; set; }
+        public string SpendingFromId { get; set; }
+        public List<SelectListItem> Goals { get; set; }
         public string InternalCategory { get; set; }
         public string UserAccountId { get; set; }
     }

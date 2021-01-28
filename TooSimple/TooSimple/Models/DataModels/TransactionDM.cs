@@ -22,7 +22,7 @@ namespace TooSimple.Models.DataModels
         public string MerchantName { get; set; }
         public string Name { get; set; }
         public string PaymentMethod { get; set; }
-        public bool Pending { get; set; }
+        public bool? Pending { get; set; }
         public string TransactionCode { get; set; }
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }

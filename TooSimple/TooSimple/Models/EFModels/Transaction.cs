@@ -42,6 +42,7 @@ namespace TooSimple.Models.EFModels
         public string UnofficialCurrencyCode { get; set; }
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }
+        public string ErrorMessage { get; set; }
         public string UserAccountId { get; set; }
     }
 }

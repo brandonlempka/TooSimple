@@ -51,7 +51,7 @@ namespace TooSimple.Managers
 
             var responseList = new List<StatusRM>();
 
-            foreach(var token in accountGroup)
+            foreach (var token in accountGroup)
             {
                 var ids = token.AccountIds.ToArray();
 
@@ -63,7 +63,7 @@ namespace TooSimple.Managers
 
             var transactionList = new List<TransactionListVM>();
 
-            foreach(var account in updatedData.Accounts)
+            foreach (var account in updatedData.Accounts)
             {
                 var transaction = account.Transactions.Select(x => new TransactionListVM
                 {
@@ -109,7 +109,7 @@ namespace TooSimple.Managers
         {
             var genericError = "Something went wrong while adding your account";
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            
+
             if (dataModel == null)
             {
                 return StatusRM.CreateError(genericError);
@@ -320,7 +320,7 @@ namespace TooSimple.Managers
 
             var viewModel = new DashboardEditTransactionVM
             {
-                SpendingFrom = new List<SelectListItem>(),
+                Goals = new List<SelectListItem>(),
                 AccountId = dataModel.AccountId,
                 AccountOwner = dataModel.AccountOwner,
                 Address = dataModel.Address,
@@ -339,17 +339,85 @@ namespace TooSimple.Managers
 
             if (goals.Goals.Any())
             {
-                foreach(var goal in goals.Goals)
+
+                viewModel.Goals = goals.Goals.Select(goal => new SelectListItem
                 {
-                    viewModel.SpendingFrom.Add(new SelectListItem
-                    {
-                        Text = goal.GoalName,
-                        Value = goal.GoalId
-                    });
+                    Text = goal.GoalName,
+                    Value = goal.GoalId,
+                }).ToList();
+
+            }
+
+            //Add ready to spend (null) option.
+            if (!string.IsNullOrWhiteSpace(dataModel.SpendingFrom))
+            {
+
+                foreach (var goal in viewModel.Goals.Where(x => x.Value == dataModel.SpendingFrom))
+                {
+                    goal.Selected = true;
                 }
+
+                viewModel.Goals.Add(new SelectListItem
+                {
+                    Text = "Ready to Spend",
+                    Value = "",
+                });
+
+            }
+            else
+            {
+                viewModel.Goals.Add(new SelectListItem
+                {
+                    Text = "Ready to Spend",
+                    Value = "",
+                    Selected = true
+                });
             }
 
             return viewModel;
+        }
+
+        public async Task<StatusRM> UpdateTransactionAsync(DashboardEditTransactionAM actionModel)
+        {
+            if (string.IsNullOrWhiteSpace(actionModel.SpendingFromId))
+                actionModel.SpendingFromId = null;
+            return await _accountDataAccessor.SaveTransactionAsync(actionModel);
+        }
+
+        public async Task<DashboardFundingScheduleListVM> GetDashboardFundingScheduleListVM(string userId)
+        {
+            var dataModel = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(userId);
+
+            return new DashboardFundingScheduleListVM
+            {
+                FundingSchedules = dataModel.FundingSchedules.Select(schedule => new FundingScheduleVM
+                {
+                    UserAccountId = schedule.UserAccountId,
+                    FirstContributionDate = schedule.FirstContributionDate,
+                    Frequency = schedule.Frequency,
+                    FundingScheduleId = schedule.FundingScheduleId,
+                    FundingScheduleName = schedule.FundingScheduleName
+                })
+            };
+        }
+
+        public async Task<DashboardFundingScheduleVM> GetDashboardFundingScheduleVM(string scheduleId)
+        {
+            var dataModel = await _budgetingDataAccessor.GetFundingScheduleDMAsync(scheduleId);
+
+            return new DashboardFundingScheduleVM
+            {
+                UserAccountId = dataModel.UserAccountId,
+                FirstContributionDate = dataModel.FirstContributionDate,
+                Frequency = dataModel.Frequency,
+                FundingScheduleId = dataModel.FundingScheduleId,
+                FundingScheduleName = dataModel.FundingScheduleName
+            };
+        }
+
+        public async Task<StatusRM> UpdateFundingScheduleAsync(DashboardSaveFundingScheduleAM actionModel)
+        {
+            return await _budgetingDataAccessor.SaveScheduleAsync(actionModel);
         }
     }
 }

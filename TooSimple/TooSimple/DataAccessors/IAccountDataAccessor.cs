@@ -16,6 +16,7 @@ namespace TooSimple.DataAccessors
         Task<StatusRM> SavePlaidTransactionData(IEnumerable<TransactionDM> dataModel);
         Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel);
         Task<StatusRM> DeleteAccountAsync(string accountId);
-        Task<TransactionDM> GetTransactionDMAsync(string transactionId)
+        Task<TransactionDM> GetTransactionDMAsync(string transactionId);
+        Task<StatusRM> SaveTransactionAsync(DashboardEditTransactionAM actionModel);
     }
 }

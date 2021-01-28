@@ -22,5 +22,7 @@ namespace TooSimple.Managers
         Task<StatusRM> DeleteAccountAsync(string accountId);
         Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser);
         Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel);
+        Task<DashboardEditTransactionVM> GetEditTransactionVMAsync(string transactionId, ClaimsPrincipal currentUser);
+        Task<StatusRM> UpdateTransactionAsync(DashboardEditTransactionAM actionModel);
     }
 }

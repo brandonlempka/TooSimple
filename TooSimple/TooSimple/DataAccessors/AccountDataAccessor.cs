@@ -52,7 +52,7 @@ namespace TooSimple.DataAccessors
                                        Name = x.Name,
                                        NickName = x.NickName,
                                        Transactions = from tran in _db.Transactions
-                                                      where tran.AccountId == accountId && tran.UserAccountId == userId
+                                                      where tran.AccountId == accountId
                                                       select new TransactionListDM
                                                       {
                                                           AccountId = tran.AccountId,
@@ -160,7 +160,7 @@ namespace TooSimple.DataAccessors
                         existingAccount.AvailableBalance = account.AvailableBalance;
                         existingAccount.NickName = account.NickName;
                         existingAccount.LastUpdated = DateTime.Now;
-                        
+
                         await _db.SaveChangesAsync();
                     }
                 }
@@ -282,7 +282,7 @@ namespace TooSimple.DataAccessors
             {
                 return StatusRM.CreateError(ex);
             }
-            
+
         }
 
         public async Task<StatusRM> DeleteAccountAsync(string accountId)
@@ -312,7 +312,54 @@ namespace TooSimple.DataAccessors
         }
         public async Task<TransactionDM> GetTransactionDMAsync(string transactionId)
         {
+            var transaction = await _db.Transactions.FirstOrDefaultAsync(tran => tran.TransactionId == transactionId);
 
+            if (transaction == null)
+                return new TransactionDM();
+
+            return new TransactionDM
+            {
+
+                AccountId = transaction.AccountId,
+                AccountOwner = transaction.AccountOwner,
+                Address = transaction.Address,
+                Amount = transaction.Amount,
+                UserAccountId = transaction.UserAccountId,
+                City = transaction.City,
+                Country = transaction.Country,
+                CurrencyCode = transaction.CurrencyCode,
+                InternalCategory = transaction.InternalCategory,
+                MerchantName = transaction.MerchantName,
+                Name = transaction.Name,
+                PaymentMethod = transaction.PaymentMethod,
+                Pending = transaction.Pending,
+                PostalCode = transaction.PostalCode,
+                ReferenceNumber = transaction.ReferenceNumber,
+                Region = transaction.Region,
+                SpendingFrom = transaction.SpendingFrom,
+                TransactionCode = transaction.TransactionCode,
+                TransactionDate = transaction.TransactionDate,
+                TransactionId = transaction.TransactionId
+            };
+        }
+
+        public async Task<StatusRM> SaveTransactionAsync(DashboardEditTransactionAM actionModel)
+        {
+            try
+            {
+                var existingTran = await _db.Transactions.FirstOrDefaultAsync(tran => tran.TransactionId == actionModel.TransactionId);
+
+                existingTran.SpendingFrom = actionModel.SpendingFromId;
+                existingTran.InternalCategory = actionModel.InternalCategory;
+
+                await _db.SaveChangesAsync();
+
+                return StatusRM.CreateSuccess(null, "Success");
+            }
+            catch(Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
         }
     }
 }

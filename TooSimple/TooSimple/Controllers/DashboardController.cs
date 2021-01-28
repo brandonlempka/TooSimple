@@ -40,11 +40,18 @@ namespace TooSimple.Controllers
             }
         }
 
-        public async Task<IActionResult> LoadTransaction(string transactionId)
+        public async Task<IActionResult> LoadTransaction(string Id)
         {
             var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetEditTransactionVMAsync(Id, currentUser);
 
+            return View("~/Views/Dashboard/DashboardEditTransaction.cshtml", viewModel);
+        }
 
+        public async Task<IActionResult> SaveTransaction(DashboardEditTransactionAM actionModel)
+        {
+            var response = await _dashboardManager.UpdateTransactionAsync(actionModel);
+            return RedirectToAction("Index", response);
         }
 
         public async Task<IActionResult> Accounts()

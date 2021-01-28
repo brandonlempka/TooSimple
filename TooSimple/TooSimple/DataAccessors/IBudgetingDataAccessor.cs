@@ -10,5 +10,8 @@ namespace TooSimple.DataAccessors
         Task<GoalListDM> GetGoalListDMAsync(string userId);
         Task<GoalDM> GetGoalDMAsync(string goalId);
         Task<StatusRM>SaveGoalAsync(DashboardSaveGoalAM actionModel);
+        Task<FundingScheduleListDM> GetFundingScheduleListDMAsync(string userId);
+        Task<FundingScheduleDM> GetFundingScheduleDMAsync(string scheduleId);
+        Task<StatusRM> SaveScheduleAsync(DashboardSaveFundingScheduleAM actionModel);
     }
 }
