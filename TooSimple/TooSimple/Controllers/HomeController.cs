@@ -25,32 +25,15 @@ namespace TooSimple.Controllers
             _plaidDataAccessor = plaidDataAccessor;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-
-            var dataModel = await _plaidDataAccessor.CreateLinkTokenAsync("123test");
-            var viewModel = new HomeVM
-            {
-                LinkToken = dataModel.Link_Token
-            };
-
-            return View(viewModel);
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        [HttpPost]
-        public async void PlaidLink([FromBody]PublicTokenRM dataModel)
-        {
-            if(!string.IsNullOrWhiteSpace(dataModel.public_token))
-            {
-                var access_token = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
-                Console.WriteLine(access_token.Access_token);
-            }
         }
     }
 }

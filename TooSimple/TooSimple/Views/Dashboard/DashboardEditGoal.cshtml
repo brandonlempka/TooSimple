@@ -1,29 +1,74 @@
 ﻿@model TooSimple.Models.ViewModels.DashboardSaveGoalVM
 
-<form id="goalForm" action="~/Dashboard/SaveGoal" method="post">
-    @Html.HiddenFor(m => Model.GoalId)
-    @Html.HiddenFor(m => Model.UserAccountId)
-    <div class="row">
-        <div class="col-sm-6">
-            @Html.LabelFor(m => m.GoalName, new { @class = "form-check-label" })
-            @Html.TextBoxFor(m => m.GoalName, new { @class = "form-control", autocomplete = "off" })
-            @Html.ValidationMessageFor(m => m.GoalName)
+@if (!Model.ExpenseFlag)
+{
+    <form id="goalForm" action="~/Dashboard/SaveGoal" method="post">
+        @Html.HiddenFor(m => Model.GoalId)
+        @Html.HiddenFor(m => Model.UserAccountId)
+        <div class="col-sm-8">
+            <div class="row">
+                @Html.LabelFor(m => m.GoalName, "Goal Name", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.GoalName, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.GoalName)
+            </div>
+            <div class="crow">
+                @Html.LabelFor(m => m.GoalAmount, "Amount", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.GoalAmount, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.GoalAmount)
+            </div>
+            <div class="row">
+                @Html.LabelFor(m => m.DesiredCompletionDate, "When do you need it by?", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.DesiredCompletionDate, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.GoalName)
+            </div>
+            <div class="row">
+                @Html.LabelFor(m => m.FundingScheduleId, "Funding Schedule", new { @class = "form-check-label" })
+                @Html.DropDownListFor(m => m.FundingScheduleId, Model.FundingScheduleOptions, new { @class = "form-control" })
+            </div>
         </div>
-        <div class="col-sm-6">
-            @Html.LabelFor(m => m.GoalAmount, new { @class = "form-check-label" })
-            @Html.TextBoxFor(m => m.GoalAmount, new { @class = "form-control", autocomplete = "off" })
-            @Html.ValidationMessageFor(m => m.GoalAmount)
-        </div>
-        <div class="col-sm-6">
-            @Html.LabelFor(m => m.DesiredCompletionDate, new { @class = "form-check-label" })
-            @Html.TextBoxFor(m => m.DesiredCompletionDate, new { @class = "form-control", autocomplete = "off" })
-            @Html.ValidationMessageFor(m => m.GoalName)
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="form-group">
-            <button id="btnSaveGoal" class="btn btn-primary">Save Goal</button>
+        <div class="row">
+            <div class="form-group">
+                <button id="btnSaveGoal" class="btn btn-primary">Save Goal</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+}
+else
+{
+    <form id="goalForm" action="~/Dashboard/SaveExpense" method="post">
+        @Html.HiddenFor(m => Model.GoalId)
+        @Html.HiddenFor(m => Model.UserAccountId)
+        <div class="col-sm-8">
+            <div class="row">
+                @Html.LabelFor(m => m.GoalName, "Expense Name", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.GoalName, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.GoalName)
+            </div>
+            <div class="crow">
+                @Html.LabelFor(m => m.FirstCompletionDate, "Due Date", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.FirstCompletionDate, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.FirstCompletionDate)
+            </div>
+            <div class="row">
+                @Html.LabelFor(m => m.AmountNeededEachTimeFrame, "How much do you need?", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.AmountNeededEachTimeFrame, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(m => m.AmountNeededEachTimeFrame)
+            </div>
+            <div class="row">
+                @Html.LabelFor(m => m.RecurrenceTimeFrame, "How often does this expense recur?", new { @class = "form-check-label" })
+                @Html.DropDownListFor(m => m.RecurrenceTimeFrame, Model.RecurrenceTimeFrameOptions, new { @class = "form-control" })
+            </div>
+            <div class="row">
+                @Html.LabelFor(m => m.FundingScheduleId, "Funding Schedule", new { @class = "form-check-label" })
+                @Html.DropDownListFor(m => m.FundingScheduleId, Model.FundingScheduleOptions, new { @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <button id="btnSaveGoal" class="btn btn-primary">Save Expense</button>
+            </div>
+        </div>
+    </form>
+}

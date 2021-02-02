@@ -6,6 +6,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using TooSimple.Data;
 using TooSimple.DataAccessors;
+using TooSimple.Extensions;
+using TooSimple.Misc.Enum;
 using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels;
 using TooSimple.Models.DataModels.Plaid;
@@ -36,10 +38,9 @@ namespace TooSimple.Managers
 
             if (!dataModel.Accounts.Any())
             {
-                var linkToken = await _plaidDataAccessor.CreateLinkTokenAsync(userId);
                 var emptyViewModel = new DashboardVM
-                {
-                    LinkToken = linkToken.Link_Token
+                { 
+                    Transactions = Enumerable.Empty<TransactionListVM>()
                 };
 
                 return emptyViewModel;
@@ -65,7 +66,7 @@ namespace TooSimple.Managers
 
             foreach (var account in updatedData.Accounts)
             {
-                var transaction = account.Transactions.Select(x => new TransactionListVM
+                var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
                 {
                     AccountId = x.AccountId,
                     AccountName = account.Name,
@@ -189,7 +190,7 @@ namespace TooSimple.Managers
 
             transactionsAddResponse = await _accountDataAccessor.SavePlaidTransactionData(newTransactions);
 
-            if (transactionsAddResponse.Success == true && accountAddResponse.Success == true)
+            if (transactionsAddResponse.Success && accountAddResponse.Success)
             {
                 return StatusRM.CreateSuccess(null, "Successfully refreshed data.");
             }
@@ -257,64 +258,151 @@ namespace TooSimple.Managers
             return await _accountDataAccessor.DeleteAccountAsync(accountId);
         }
 
-        public async Task<DashboardGoalsVM> GetGoalsVMAsync(ClaimsPrincipal currentUser)
+        public async Task<DashboardGoalListVM> GetGoalsVMAsync(ClaimsPrincipal currentUser, bool isExpense = false)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
 
-            return new DashboardGoalsVM
+            return new DashboardGoalListVM
             {
-                Goals = dataModel.Goals.Select(x => new DashboardGoalsListVM
+                Goals = dataModel.Goals.Where(goal => goal.ExpenseFlag == isExpense)
+                .Select(x => new DashboardGoalVM
                 {
                     GoalAmount = x.GoalAmount,
                     UserAccountId = x.UserAccountId,
                     CurrentBalance = x.CurrentBalance,
                     DesiredCompletionDate = x.DesiredCompletionDate,
                     GoalId = x.GoalId,
-                    GoalName = x.GoalName
+                    GoalName = x.GoalName,
+                    AmountNeededEachTimeFrame = x.AmountNeededEachTimeFrame,
+                    ExpenseFlag = x.ExpenseFlag,
+                    FirstCompletionDate = x.FirstCompletionDate,
+                    RecurrenceTimeFrame = x.RecurrenceTimeFrame,
                 })
             };
+
         }
 
-        public async Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser)
+        public async Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser, bool isExpense)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            if (goalId == "")
+
+            var fundingSchedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(userId);
+            var expenseSchedules = new List<ExpenseFrequencies>
+            {
+                ExpenseFrequencies.Weekly,
+                ExpenseFrequencies.BiWeekly,
+                ExpenseFrequencies.Monthly,
+                ExpenseFrequencies.BiMonthly,
+                ExpenseFrequencies.ThreeMonths,
+                ExpenseFrequencies.SixMonths,
+                ExpenseFrequencies.Yearly
+            };
+
+            if (string.IsNullOrWhiteSpace(goalId))
                 return new DashboardSaveGoalVM
                 {
-                    UserAccountId = userId
+                    UserAccountId = userId,
+                    FundingScheduleOptions = fundingSchedules.FundingSchedules.Select(schedule => new SelectListItem
+                    {
+                        Text = schedule.FundingScheduleName,
+                        Value = schedule.FundingScheduleId,
+                        Selected = false
+                    }).ToList(),
+                    RecurrenceTimeFrameOptions = expenseSchedules.Select(option => new SelectListItem
+                    {
+                        Text = option.ToString(),
+                        Value = ((int)option).ToString(),
+                        Selected = false
+                    }).ToList(),
+                    ExpenseFlag = isExpense
                 };
 
             var existingAccount = await _budgetingDataAccessor.GetGoalDMAsync(goalId);
 
-            if (existingAccount == null)
-                return new DashboardSaveGoalVM
-                {
-                    UserAccountId = userId
-                };
-
-            return new DashboardSaveGoalVM
+            var viewModel = new DashboardSaveGoalVM
             {
                 GoalAmount = existingAccount.GoalAmount,
                 CurrentBalance = existingAccount.CurrentBalance,
                 DesiredCompletionDate = existingAccount.DesiredCompletionDate,
                 GoalId = existingAccount.GoalId,
                 GoalName = existingAccount.GoalName,
-                UserAccountId = userId
+                UserAccountId = userId,
+                AmountNeededEachTimeFrame = existingAccount.AmountNeededEachTimeFrame,
+                ExpenseFlag = existingAccount.ExpenseFlag,
+                FirstCompletionDate = existingAccount.FirstCompletionDate,
+                FundingScheduleId = existingAccount.FundingScheduleId,
+                RecurrenceTimeFrame = existingAccount.RecurrenceTimeFrame,
+                FundingScheduleOptions = new List<SelectListItem>(),
+                RecurrenceTimeFrameOptions = new List<SelectListItem>()
             };
+
+            if (fundingSchedules.FundingSchedules.Any())
+            {
+                foreach (var schedule in fundingSchedules.FundingSchedules)
+                {
+                    if (schedule.FundingScheduleId == existingAccount.FundingScheduleId)
+                    {
+                        viewModel.FundingScheduleOptions.Add(new SelectListItem
+                        {
+                            Selected = true,
+                            Value = existingAccount.FundingScheduleId,
+                            Text = schedule.FundingScheduleName
+                        });
+                    }
+                    else
+                    {
+                        viewModel.FundingScheduleOptions.Add(new SelectListItem
+                        {
+                            Selected = false,
+                            Value = existingAccount.FundingScheduleId,
+                            Text = schedule.FundingScheduleName
+                        });
+                    }
+                }
+            }
+
+            foreach (var option in expenseSchedules)
+            {
+                if ((int)option == existingAccount.RecurrenceTimeFrame)
+                {
+                    viewModel.RecurrenceTimeFrameOptions.Add(new SelectListItem
+                    {
+                        Selected = true,
+                        Value = ((int)option).ToString(),
+                        Text = option.ToString()
+                    });
+                }
+                else
+                {
+                    viewModel.RecurrenceTimeFrameOptions.Add(new SelectListItem
+                    {
+                        Selected = false,
+                        Value = ((int)option).ToString(),
+                        Text = option.ToString()
+                    });
+                }
+            }
+
+            return viewModel;
         }
 
         public async Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel)
         {
             return await _budgetingDataAccessor.SaveGoalAsync(actionModel);
         }
+
+        public async Task<StatusRM> DeleteGoalAsync(string goalId)
+        {
+            return await _budgetingDataAccessor.DeleteGoalAsync(goalId);
+        }
+
         public async Task<DashboardEditTransactionVM> GetEditTransactionVMAsync(string transactionId, ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-
 
             var dataModel = await _accountDataAccessor.GetTransactionDMAsync(transactionId);
 
@@ -360,7 +448,7 @@ namespace TooSimple.Managers
                 viewModel.Goals.Add(new SelectListItem
                 {
                     Text = "Ready to Spend",
-                    Value = "",
+                    Value = string.Empty,
                 });
 
             }
@@ -369,7 +457,7 @@ namespace TooSimple.Managers
                 viewModel.Goals.Add(new SelectListItem
                 {
                     Text = "Ready to Spend",
-                    Value = "",
+                    Value = string.Empty,
                     Selected = true
                 });
             }
@@ -384,13 +472,14 @@ namespace TooSimple.Managers
             return await _accountDataAccessor.SaveTransactionAsync(actionModel);
         }
 
-        public async Task<DashboardFundingScheduleListVM> GetDashboardFundingScheduleListVM(string userId)
+        public async Task<DashboardFundingScheduleListVM> GetDashboardFundingScheduleListVM(ClaimsPrincipal currentUser)
         {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var dataModel = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(userId);
 
             return new DashboardFundingScheduleListVM
             {
-                FundingSchedules = dataModel.FundingSchedules.Select(schedule => new FundingScheduleVM
+                FundingSchedules = dataModel.FundingSchedules.Select(schedule => new DashboardFundingScheduleVM
                 {
                     UserAccountId = schedule.UserAccountId,
                     FirstContributionDate = schedule.FirstContributionDate,
@@ -401,23 +490,78 @@ namespace TooSimple.Managers
             };
         }
 
-        public async Task<DashboardFundingScheduleVM> GetDashboardFundingScheduleVM(string scheduleId)
+        public async Task<DashboardFundingScheduleVM> GetDashboardFundingScheduleVM(string scheduleId, ClaimsPrincipal currentUser)
         {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var frequencyOptions = new List<FundingFrequencies>
+            {
+                FundingFrequencies.Weekly,
+                FundingFrequencies.BiWeekly,
+                FundingFrequencies.Monthly,
+                FundingFrequencies.BiMonthly
+            };
+
+            if (string.IsNullOrWhiteSpace(scheduleId))
+            {
+                var newModel = new DashboardFundingScheduleVM
+                {
+                    UserAccountId = userId,
+                    FrequencyList = frequencyOptions.Select(option => new SelectListItem
+                    {
+                        Text = option.ToString(),
+                        Value = ((int)option).ToString(),
+                        Selected = false
+                    }).ToList()
+                };
+
+                return newModel;
+            }
+
             var dataModel = await _budgetingDataAccessor.GetFundingScheduleDMAsync(scheduleId);
 
-            return new DashboardFundingScheduleVM
+            var viewModel = new DashboardFundingScheduleVM
             {
                 UserAccountId = dataModel.UserAccountId,
                 FirstContributionDate = dataModel.FirstContributionDate,
                 Frequency = dataModel.Frequency,
                 FundingScheduleId = dataModel.FundingScheduleId,
-                FundingScheduleName = dataModel.FundingScheduleName
+                FundingScheduleName = dataModel.FundingScheduleName,
+                FrequencyList = new List<SelectListItem>()
             };
+
+            foreach (var option in frequencyOptions)
+            {
+                if ((int)option == dataModel.Frequency)
+                {
+                    viewModel.FrequencyList.Add(new SelectListItem
+                    {
+                        Text = option.ToString(),
+                        Value = ((int)option).ToString(),
+                        Selected = true
+                    });
+                }
+                else
+                {
+                    viewModel.FrequencyList.Add(new SelectListItem
+                    {
+                        Text = option.ToString(),
+                        Value = ((int)option).ToString(),
+                        Selected = false
+                    });
+                }
+            }
+
+            return viewModel;
         }
 
         public async Task<StatusRM> UpdateFundingScheduleAsync(DashboardSaveFundingScheduleAM actionModel)
         {
             return await _budgetingDataAccessor.SaveScheduleAsync(actionModel);
+        }
+
+        public async Task<StatusRM> DeleteFundingScheduleAsync(string scheduleId)
+        {
+            return await _budgetingDataAccessor.DeleteScheduleAsync(scheduleId);
         }
     }
 }

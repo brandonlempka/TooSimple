@@ -33,22 +33,21 @@ namespace TooSimple.DataAccessors
                             CurrentBalance = goal.CurrentBalance,
                             DesiredCompletionDate = goal.DesiredCompletionDate,
                             GoalId = goal.GoalId,
-                            GoalName = goal.GoalName
+                            GoalName = goal.GoalName,
+                            FundingScheduleId = goal.FundingScheduleId,
+                            AmountNeededEachTimeFrame = goal.AmountNeededEachTimeFrame,
+                            ExpenseFlag = goal.ExpenseFlag,
+                            FirstCompletionDate = goal.FirstCompletionDate,
+                            RecurrenceTimeFrame = goal.RecurrenceTimeFrame
                         }
             };
 
             return dataModel;
-
         }
 
         public async Task<GoalDM> GetGoalDMAsync(string goalId)
         {
             var data = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == goalId);
-
-            if (data == null)
-            {
-                return new GoalDM();
-            }
 
             return new GoalDM
             {
@@ -56,7 +55,13 @@ namespace TooSimple.DataAccessors
                 CurrentBalance = data.CurrentBalance,
                 DesiredCompletionDate = data.DesiredCompletionDate,
                 GoalId = data.GoalId,
-                GoalName = data.GoalName
+                GoalName = data.GoalName,
+                FundingScheduleId = data.FundingScheduleId,
+                AmountNeededEachTimeFrame = data.AmountNeededEachTimeFrame,
+                UserAccountId = data.UserAccountId,
+                ExpenseFlag = data.ExpenseFlag,
+                FirstCompletionDate = data.FirstCompletionDate,
+                RecurrenceTimeFrame = data.RecurrenceTimeFrame
             };
         }
 
@@ -72,7 +77,12 @@ namespace TooSimple.DataAccessors
                         CurrentBalance = 0,
                         DesiredCompletionDate = actionModel.DesiredCompletionDate,
                         GoalName = actionModel.GoalName,
-                        UserAccountId = actionModel.UserAccountId
+                        UserAccountId = actionModel.UserAccountId,
+                        FundingScheduleId = actionModel.FundingScheduleId,
+                        AmountNeededEachTimeFrame = actionModel.AmountNeededEachTimeFrame,
+                        ExpenseFlag = actionModel.ExpenseFlag,
+                        FirstCompletionDate = actionModel.FirstCompletionDate,
+                        RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame
                     });
 
                     await _db.SaveChangesAsync();
@@ -86,10 +96,32 @@ namespace TooSimple.DataAccessors
                 existingGoal.GoalAmount = actionModel.GoalAmount;
                 existingGoal.DesiredCompletionDate = actionModel.DesiredCompletionDate;
                 existingGoal.CurrentBalance = actionModel.CurrentBalance;
+                existingGoal.FundingScheduleId = actionModel.FundingScheduleId;
+                existingGoal.RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame;
+                existingGoal.FirstCompletionDate = actionModel.FirstCompletionDate;
+                existingGoal.ExpenseFlag = actionModel.ExpenseFlag;
+                existingGoal.AmountNeededEachTimeFrame = actionModel.AmountNeededEachTimeFrame;
 
                 await _db.SaveChangesAsync();
 
                 return StatusRM.CreateSuccess(null, "Success");
+            }
+            catch (Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
+        }
+
+        public async Task<StatusRM> DeleteGoalAsync(string goalId)
+        {
+            try
+            {
+                var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == goalId);
+                _db.Goals.Remove(existingGoal);
+
+                await _db.SaveChangesAsync();
+
+                return StatusRM.CreateSuccess(null, "Successfully deleted.");
             }
             catch (Exception ex)
             {
@@ -119,11 +151,6 @@ namespace TooSimple.DataAccessors
         public async Task<FundingScheduleDM> GetFundingScheduleDMAsync(string scheduleId)
         {
             var data = await _db.FundingSchedules.FirstOrDefaultAsync(schedule => schedule.FundingScheduleId == scheduleId);
-
-            if (data == null)
-            {
-                return new FundingScheduleDM();
-            }
 
             return new FundingScheduleDM
             {
@@ -167,5 +194,23 @@ namespace TooSimple.DataAccessors
                 return StatusRM.CreateError(ex);
             }
         }
+
+        public async Task<StatusRM> DeleteScheduleAsync(string scheduleId)
+        {
+            try
+            {
+                var existingSchedule = await _db.FundingSchedules.FirstOrDefaultAsync(schedule => schedule.FundingScheduleId == scheduleId);
+                _db.FundingSchedules.Remove(existingSchedule);
+
+                await _db.SaveChangesAsync();
+
+                return StatusRM.CreateSuccess(null, "Successfully deleted funding schedule.");
+            }
+            catch (Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
+        }
+
     }
 }

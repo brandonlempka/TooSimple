@@ -17,7 +17,6 @@ namespace TooSimple.Models.ViewModels
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
         public IEnumerable<TransactionListVM> Transactions { get; set; }
-        public string LinkToken { get; set; }
         public string ErrorMessage { get; set; }
     }
 }

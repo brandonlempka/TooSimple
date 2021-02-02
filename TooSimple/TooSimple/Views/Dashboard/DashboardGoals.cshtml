@@ -1,9 +1,9 @@
-﻿@model TooSimple.Models.ViewModels.DashboardGoalsVM
+﻿@model TooSimple.Models.ViewModels.DashboardGoalListVM
 
 <h1>Goals</h1>
 <div class="row form-group">
     <div class="col-sm-6">
-        <a href="~/Dashboard/AddEditGoal" title="New Goal" id="btnNewgoal" class="btn btn-primary">Add Goal</a>
+        <a href="~/Dashboard/AddEditGoal?isExpense=false" title="New Goal" id="btnNewGoal" class="btn btn-primary">Add Goal</a>
     </div>
 </div>
 
@@ -21,8 +21,8 @@
         <tr>
             <td>@goal.GoalName</td>
             <td>@goal.CurrentBalance / @goal.GoalAmount</td>
-            <td><a href="Dashboard/AddEditGoal?id=@goal.GoalId">Edit</a></td>
-            <td><a href="Dashboard/DeleteGoal?id=@goal.GoalId">Delete</a></td>
+            <td><a href="~/Dashboard/AddEditGoal?id=@goal.GoalId">Edit</a></td>
+            <td><a href="~/Dashboard/DeleteGoal?isExpense=false&id=@goal.GoalId">Delete</a></td>
         </tr>
     }
 </table>

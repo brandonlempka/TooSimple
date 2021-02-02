@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.ViewModels
 {
-    public class DashboardGoalsVM
+    public class DashboardExpenseVM
     {
-        public IEnumerable<DashboardGoalsListVM> Goals { get; set; }
     }
 }

@@ -1,0 +1,26 @@
+﻿@model TooSimple.Models.ViewModels.DashboardFundingScheduleListVM
+
+<h1>Funding Schedules</h1>
+<div class="row form-group">
+    <div class="col-sm-6">
+        <a href="~/Dashboard/AddEditSchedule" title="New Funding Schedule" id="btnNewSchedule" class="btn btn-primary">Add Funding Schedule</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    @foreach(var schedule in Model.FundingSchedules)
+    {
+        <tr>
+            <td>@schedule.FundingScheduleName</td>
+            <td><a href="~/Dashboard/AddEditSchedule?Id=@schedule.FundingScheduleId">Edit</a></td>
+            <td><a href="~/Dashboard/DeleteSchedule?Id=@schedule.FundingScheduleId">Delete</a></td>
+        </tr>
+    }
+</table>

@@ -86,24 +86,85 @@ namespace TooSimple.Controllers
         public async Task<IActionResult> Goals()
         {
             var currentUser = this.User;
-            var viewModel = await _dashboardManager.GetGoalsVMAsync(currentUser);
+            var viewModel = await _dashboardManager.GetGoalsVMAsync(currentUser, false);
 
             return View("~/Views/Dashboard/DashboardGoals.cshtml", viewModel);
         }
 
-        public async Task<IActionResult> AddEditGoal(string goalId = "")
+        public async Task<IActionResult> AddEditGoal(bool isExpense, string Id = "")
         {
             var currentUser = this.User;
-            var viewModel = await _dashboardManager.GetSaveGoalVMAsync(goalId, currentUser);
+            var viewModel = await _dashboardManager.GetSaveGoalVMAsync(Id, currentUser, isExpense);
             return View("~/Views/Dashboard/DashboardEditGoal.cshtml", viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveGoal(DashboardSaveGoalAM actionModel)
         {
+            actionModel.ExpenseFlag = false;
             var response = await _dashboardManager.UpdateGoalAsync(actionModel);
-            return Json(response);
+            return RedirectToAction("Goals", response);
         }
 
+        public async Task<IActionResult> DeleteGoal(string Id, bool isExpense)
+        {
+            var response = await _dashboardManager.DeleteGoalAsync(Id);
+
+            if (!isExpense)
+            {
+                return RedirectToAction("Goals", response);
+            }
+            else
+            {
+                return RedirectToAction("Expenses", response);
+            }
+        }
+
+        public async Task<IActionResult> Expenses()
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetGoalsVMAsync(currentUser, true);
+
+            return View("~/Views/Dashboard/DashboardExpenses.cshtml", viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveExpense(DashboardSaveGoalAM actionModel)
+        {
+            actionModel.ExpenseFlag = true;
+            var response = await _dashboardManager.UpdateGoalAsync(actionModel);
+            return RedirectToAction("Expenses", response);
+        }
+
+        public async Task<IActionResult> FundingSchedules()
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetDashboardFundingScheduleListVM(currentUser);
+
+            return View("~/Views/Dashboard/DashboardFundingSchedules.cshtml", viewModel);
+        }
+
+        public async Task<IActionResult> AddEditSchedule(string Id = "")
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetDashboardFundingScheduleVM(Id, currentUser);
+
+            return View("~/Views/Dashboard/DashboardEditSchedule.cshtml", viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveFundingSchedule(DashboardSaveFundingScheduleAM actionModel)
+        {
+            var response = await _dashboardManager.UpdateFundingScheduleAsync(actionModel);
+
+            return RedirectToAction("FundingSchedules", response);
+        }
+
+        public async Task<IActionResult> DeleteSchedule(string Id)
+        {
+            var response = await _dashboardManager.DeleteFundingScheduleAsync(Id);
+
+            return RedirectToAction("FundingSchedules", response);
+        }
     }
 }

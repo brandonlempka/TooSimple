@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TooSimple.Models.EFModels
+namespace TooSimple.Models.DataModels
 {
-    public class Expense
+    public class ExpenseDM
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string ExpenseId { get; set; }
         public string UserAccountId { get; set; }
         public string ExpenseName { get; set; }

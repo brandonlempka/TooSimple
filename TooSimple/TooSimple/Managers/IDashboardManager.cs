@@ -18,11 +18,16 @@ namespace TooSimple.Managers
         Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser);
         Task<DashboardEditAccountVM> GetIndividualAccountVMAsync(string Id, ClaimsPrincipal currentUser);
         Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel);
-        Task<DashboardGoalsVM> GetGoalsVMAsync(ClaimsPrincipal currentUser);
+        Task<DashboardGoalListVM> GetGoalsVMAsync(ClaimsPrincipal currentUser, bool isExpense = false);
         Task<StatusRM> DeleteAccountAsync(string accountId);
-        Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser);
+        Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser, bool isExpense);
         Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel);
+        Task<StatusRM> DeleteGoalAsync(string goalId);
         Task<DashboardEditTransactionVM> GetEditTransactionVMAsync(string transactionId, ClaimsPrincipal currentUser);
         Task<StatusRM> UpdateTransactionAsync(DashboardEditTransactionAM actionModel);
+        Task<DashboardFundingScheduleListVM> GetDashboardFundingScheduleListVM(ClaimsPrincipal currentUser);
+        Task<DashboardFundingScheduleVM> GetDashboardFundingScheduleVM(string scheduleId, ClaimsPrincipal currentUser);
+        Task<StatusRM> UpdateFundingScheduleAsync(DashboardSaveFundingScheduleAM actionModel);
+        Task<StatusRM> DeleteFundingScheduleAsync(string scheduleId);
     }
 }

@@ -15,10 +15,14 @@ namespace TooSimple.Models.ResponseModels.Plaid
         public string category_id { get; set; }
         public string date { get; set; }
         public string authorized_date { get; set; }
+#nullable enable
         public PlaidLocationRM? location { get; set; }
+#nullable disable
         public string name { get; set; }
         public string merchant_name { get; set; }
+#nullable enable
         public PlaidPaymentMetaRM? payment_meta { get; set; }
+#nullable disable
         public string payment_channel { get; set; }
         public bool pending { get; set; }
         public string pending_transaction_id { get; set; }

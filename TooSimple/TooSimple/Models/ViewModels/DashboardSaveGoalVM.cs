@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,10 +15,17 @@ namespace TooSimple.Models.ViewModels
         [Required(ErrorMessage = "Required")]
         public string GoalName { get; set; }
         [Required(ErrorMessage = "Required")]
-        public decimal GoalAmount { get; set; }
+        public decimal? GoalAmount { get; set; }
         [Required(ErrorMessage = "Required")]
         public decimal CurrentBalance { get; set; }
         [Required(ErrorMessage = "Required")]
-        public DateTime DesiredCompletionDate { get; set; }
+        public DateTime? DesiredCompletionDate { get; set; }
+        public List<SelectListItem> FundingScheduleOptions { get; set; }
+        public string FundingScheduleId { get; set; }
+        public bool ExpenseFlag { get; set; }
+        public DateTime? FirstCompletionDate { get; set; }
+        public decimal? AmountNeededEachTimeFrame { get; set; }
+        public int? RecurrenceTimeFrame { get; set; }
+        public List<SelectListItem> RecurrenceTimeFrameOptions { get; set; }
     }
 }

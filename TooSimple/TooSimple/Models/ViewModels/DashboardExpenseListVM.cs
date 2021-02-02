@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.ViewModels
 {
-    public class DashboardFundingScheduleListVM
+    public class DashboardExpenseListVM
     {
-        public IEnumerable<DashboardFundingScheduleVM> FundingSchedules { get; set; }
-
+        public IEnumerable<DashboardExpenseVM> Expenses { get; set; }
     }
 }

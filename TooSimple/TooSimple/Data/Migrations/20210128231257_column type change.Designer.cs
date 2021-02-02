@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TooSimple.Data;
 
 namespace TooSimple.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210128231257_column type change")]
+    partial class columntypechange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,30 +261,36 @@ namespace TooSimple.Data.Migrations
                     b.ToTable("Account");
                 });
 
-            modelBuilder.Entity("TooSimple.Models.EFModels.FundingHistory", b =>
+            modelBuilder.Entity("TooSimple.Models.EFModels.Expense", b =>
                 {
-                    b.Property<string>("FundingHistoryId")
+                    b.Property<string>("ExpenseId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal>("Amount")
+                    b.Property<decimal>("AmountNeededEachTimeFrame")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("FromAccountId")
+                    b.Property<decimal>("CurrentBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ExpenseName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ToAccountId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TransferDate")
+                    b.Property<DateTime>("FirstCompletionDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("FundingHistoryId");
+                    b.Property<string>("FundingScheduleId")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("FundingHistory");
+                    b.Property<long>("RecurrenceTimeFrame")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserAccountId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ExpenseId");
+
+                    b.ToTable("Expense");
                 });
 
             modelBuilder.Entity("TooSimple.Models.EFModels.FundingSchedule", b =>
@@ -314,32 +322,17 @@ namespace TooSimple.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("AmountNeededEachTimeFrame")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("CurrentBalance")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("DesiredCompletionDate")
+                    b.Property<DateTime>("DesiredCompletionDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("ExpenseFlag")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("FirstCompletionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FundingScheduleId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("GoalAmount")
+                    b.Property<decimal>("GoalAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("GoalName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RecurrenceTimeFrame")
-                        .HasColumnType("int");
 
                     b.Property<string>("UserAccountId")
                         .HasColumnType("nvarchar(max)");
