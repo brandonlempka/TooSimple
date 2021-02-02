@@ -563,5 +563,33 @@ namespace TooSimple.Managers
         {
             return await _budgetingDataAccessor.DeleteScheduleAsync(scheduleId);
         }
+
+        public async Task<DashboardMoveMoneyVM> GetMoveMoneyVMAsync(ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var goalsList = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+
+            var viewModel = new DashboardMoveMoneyVM
+            {
+                AccountsList = new List<SelectListItem>(),
+                UserAccountId = userId
+            };
+
+            viewModel.AccountsList = goalsList.Goals.EmptyIfNull().Select(goal => new SelectListItem
+            {
+                Text = goal.GoalName,
+                Value = goal.GoalId,
+                Selected = false
+            }).ToList();
+
+            viewModel.AccountsList.Add(new SelectListItem
+            {
+                Text = "Ready to Spend",
+                Value = "0",
+                Selected = true
+            });
+
+            return viewModel;
+        }
     }
 }

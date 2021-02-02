@@ -166,5 +166,12 @@ namespace TooSimple.Controllers
 
             return RedirectToAction("FundingSchedules", response);
         }
+
+        public async Task<IActionResult> MoveMoney()
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetMoveMoneyVMAsync(currentUser);
+            return View("~/Views/Dashboard/DashboardTransferBetweenGoals.cshtml", viewModel);
+        }
     }
 }

@@ -5,15 +5,15 @@
     @Html.HiddenFor(m => m.UserAccountId)
     <div class="col-sm-8">
         <div class="row">
-            @Html.LabelFor(m => m.FundingScheduleName, new { @class = "form-check-label" })
+            @Html.LabelFor(m => m.FundingScheduleName, "Name", new { @class = "form-check-label" })
             @Html.TextBoxFor(m => m.FundingScheduleName, new { @class = "form-control" })
         </div>
         <div class="row">
-            @Html.LabelFor(m => m.FirstContributionDate, new { @class = "form-check-label" })
+            @Html.LabelFor(m => m.FirstContributionDate, "Date", new { @class = "form-check-label" })
             @Html.TextBoxFor(m => m.FirstContributionDate, new { @class = "form-control" })
         </div>
         <div class="row">
-            @Html.LabelFor(m => m.Frequency, new { @class = "form-check-label" })
+            @Html.LabelFor(m => m.Frequency, "Frequency", new { @class = "form-check-label" })
             @Html.DropDownListFor(m => m.Frequency, Model.FrequencyList, new { @class = "form-control" })
         </div>
         <div class="row">
