@@ -93,9 +93,10 @@ namespace TooSimple.Managers
 
             }
 
+            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(updatedData, userId);
             var viewModel = new DashboardVM
             {
-                CurrentBalance = updatedData.Accounts.Select(x => x.CurrentBalance).Sum(),
+                CurrentBalance = currentBalance,
                 Transactions = transactionList
             };
 
@@ -590,6 +591,11 @@ namespace TooSimple.Managers
             });
 
             return viewModel;
+        }
+
+        public async Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel)
+        {
+            return await _budgetingDataAccessor.SaveMoveMoneyAsync(actionModel);
         }
     }
 }

@@ -15,5 +15,7 @@ namespace TooSimple.DataAccessors
         Task<FundingScheduleDM> GetFundingScheduleDMAsync(string scheduleId);
         Task<StatusRM> SaveScheduleAsync(DashboardSaveFundingScheduleAM actionModel);
         Task<StatusRM> DeleteScheduleAsync(string scheduleId);
+        Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel);
+        Task<decimal?> CalculateUserAccountBalance(AccountListDM accountsDM, string userAccountId);
     }
 }

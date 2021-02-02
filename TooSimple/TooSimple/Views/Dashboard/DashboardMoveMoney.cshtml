@@ -2,16 +2,16 @@
 
 @if (Model.AccountsList.Count > 1)
 {
-    <form id="transferBetweenGoals" action="~/Dashboard/TransferBetweenGoals" method="post">
+    <form id="transferBetweenGoals" action="~/Dashboard/SaveMoveMoney" method="post">
         @Html.HiddenFor(m => m.UserAccountId)
         <div class="col-sm-8">
             <div class="row">
-                @Html.LabelFor(m => m.FromAccount, "From Account", new { @class = "form-check-label" })
-                @Html.DropDownListFor(m => m.FromAccount, Model.AccountsList, new { @class = "form-control" })
+                @Html.LabelFor(m => m.FromAccountId, "From Account", new { @class = "form-check-label" })
+                @Html.DropDownListFor(m => m.FromAccountId, Model.AccountsList, new { @class = "form-control" })
             </div>
             <div class="row">
-                @Html.LabelFor(m => m.ToAccount, "To Account", new { @class = "form-check-label" })
-                @Html.DropDownListFor(m => m.ToAccount, Model.AccountsList, new { @class = "form-control" })
+                @Html.LabelFor(m => m.ToAccountId, "To Account", new { @class = "form-check-label" })
+                @Html.DropDownListFor(m => m.ToAccountId, Model.AccountsList, new { @class = "form-control" })
             </div>
             <div class="row">
                 @Html.LabelFor(m => m.Amount, "Amount", new { @class = "form-check-label" })

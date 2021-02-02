@@ -171,7 +171,15 @@ namespace TooSimple.Controllers
         {
             var currentUser = this.User;
             var viewModel = await _dashboardManager.GetMoveMoneyVMAsync(currentUser);
-            return View("~/Views/Dashboard/DashboardTransferBetweenGoals.cshtml", viewModel);
+
+            return View("~/Views/Dashboard/DashboardMoveMoney.cshtml", viewModel);
+        }
+
+        public async Task<IActionResult> SaveMoveMoney(DashboardMoveMoneyAM actionModel)
+        {
+            var response = await _dashboardManager.SaveMoveMoneyAsync(actionModel);
+
+            return RedirectToAction("Dashboard", response);
         }
     }
 }

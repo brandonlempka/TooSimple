@@ -30,5 +30,6 @@ namespace TooSimple.Managers
         Task<StatusRM> UpdateFundingScheduleAsync(DashboardSaveFundingScheduleAM actionModel);
         Task<StatusRM> DeleteFundingScheduleAsync(string scheduleId);
         Task<DashboardMoveMoneyVM> GetMoveMoneyVMAsync(ClaimsPrincipal currentUser);
+        Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel);
     }
 }

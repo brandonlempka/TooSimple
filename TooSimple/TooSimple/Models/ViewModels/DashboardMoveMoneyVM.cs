@@ -10,8 +10,8 @@ namespace TooSimple.Models.ViewModels
     {
         public string UserAccountId { get; set; }
         public List<SelectListItem> AccountsList { get; set; }
-        public string FromAccount { get; set; }
-        public string ToAccount { get; set; }
+        public string FromAccountId { get; set; }
+        public string ToAccountId { get; set; }
         public decimal Amount { get; set; }
     }
 }

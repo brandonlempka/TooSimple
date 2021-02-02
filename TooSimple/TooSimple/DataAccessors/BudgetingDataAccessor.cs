@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TooSimple.Data;
+using TooSimple.Extensions;
 using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels;
 using TooSimple.Models.EFModels;
@@ -212,5 +213,56 @@ namespace TooSimple.DataAccessors
             }
         }
 
+        public async Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel)
+        {
+            try
+            {
+                if (actionModel.FromAccountId == "0")
+                {
+                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.ToAccountId);
+                    existingGoal.CurrentBalance += actionModel.Amount;
+                }
+                else if (actionModel.ToAccountId == "0")
+                {
+                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.FromAccountId);
+                    existingGoal.CurrentBalance += actionModel.Amount;
+                }
+                else
+                {
+                    var fromGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.FromAccountId);
+                    var toGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.ToAccountId);
+
+                    fromGoal.CurrentBalance -= actionModel.Amount;
+                    toGoal.CurrentBalance += actionModel.Amount;
+                }
+
+                await _db.SaveChangesAsync();
+                return StatusRM.CreateSuccess(null, "Successfully moved money.");
+            }
+            catch (Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
+        }
+
+        public async Task<decimal?> CalculateUserAccountBalance(AccountListDM accountsDM, string userAccountId)
+        {
+
+            var goalDM = await GetGoalListDMAsync(userAccountId);
+            var accountSum = accountsDM.Accounts.EmptyIfNull().Select(x => x.CurrentBalance).Sum();
+            var goalsSum = goalDM.Goals.Select(x => x.CurrentBalance).Sum();
+            decimal transactionsSum = 0;
+
+            foreach (var account in accountsDM.Accounts)
+            {
+                transactionsSum += account.Transactions.Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom))
+                    .Select(x => x.Amount).Sum();
+            }
+
+            accountSum -= goalsSum;
+            accountSum += transactionsSum;
+
+            return accountSum;
+        }
     }
 }
