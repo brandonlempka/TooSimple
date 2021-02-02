@@ -1,0 +1,19 @@
+﻿@model TooSimple.Models.ViewModels.DashboardEditTransactionVM
+<p>@Model.Name</p>
+<p>@Model.MerchantName</p>
+<p>@Model.Amount</p>
+<form id="editTransactionForm" action="~/Dashboard/SaveTransaction" method="post">
+    @Html.HiddenFor(m => m.TransactionId)
+    @Html.HiddenFor(m => m.AccountId)
+    @Html.HiddenFor(m => m.UserAccountId)
+    <div class="row">
+
+    </div>
+    @Html.LabelFor(m => m.SpendingFromId, "Spending From", new { @class = "form-check-label" })
+    @Html.DropDownListFor(m => m.SpendingFromId, Model.Goals, new { @class = "form-control" })
+    <div class="row">
+        <div class="form-group">
+            <button id="btnSaveTransaction" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</form>

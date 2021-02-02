@@ -1,0 +1,15 @@
+﻿@model TooSimple.Models.ViewModels.DashboardEditAccountVM
+
+<form id="editAccountForm" action="~/Dashboard/SaveAccount" method="post">
+    @Html.HiddenFor(m => Model.AccountId)
+    <div class="row">
+        @Html.LabelFor(m => m.NickName, "Account Nick Name", new { @class = "form-check-label"})
+        @Html.TextBoxFor(m => m.NickName, new { @class = "form-control" })
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <button id="btnSaveAccount" class="btn btn-primary">Save Changes</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,29 @@
+﻿@model TooSimple.Models.ViewModels.DashboardGoalListVM
+
+<h1>Expenses</h1>
+<div class="row form-group">
+    <div class="col-sm-6">
+        <a href="~/Dashboard/AddEditGoal?isExpense=true" title="New Expense" class="btn btn-primary">Add Expense</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    @foreach (var goal in Model.Goals)
+    {
+        <tr>
+            <td>@goal.GoalName</td>
+            <td>@goal.CurrentBalance / @goal.AmountNeededEachTimeFrame</td>
+            <td><a href="~/Dashboard/AddEditGoal?id=@goal.GoalId">Edit</a></td>
+            <td><a href="~/Dashboard/DeleteGoal?isExpense=true&id=@goal.GoalId">Delete</a></td>
+        </tr>
+    }
+
+</table>

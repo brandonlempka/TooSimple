@@ -7,6 +7,8 @@ using TooSimple.Models.DataModels.Plaid;
 using TooSimple.Models.ResponseModels.Plaid;
 using TooSimple.Extensions;
 using Newtonsoft.Json;
+using TooSimple.Models.ResponseModels;
+using TooSimple.Models.RequestModels;
 
 namespace TooSimple.DataAccessors
 {
@@ -48,7 +50,7 @@ namespace TooSimple.DataAccessors
             return JsonConvert.DeserializeObject<CreateLinkTokenRM>(response);
         }
 
-        public async Task<TokenExchangeRM> PublicTokenExchange(string publicToken)
+        public async Task<TokenExchangeRM> PublicTokenExchangeAsync(string publicToken)
         {
             var dataModel = new TokenExchangeDM
             {
@@ -64,6 +66,52 @@ namespace TooSimple.DataAccessors
 
             var responseModel = JsonConvert.DeserializeObject<TokenExchangeRM>(response);
             return responseModel;
+        }
+
+        public async Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken, string[] accountIds)
+        {
+            var dataModel = new PlaidAccountRequestDM
+            {
+                access_token = accessToken,
+                client_id = _appSettings.PlaidClientId,
+                secret = _appSettings.PlaidSecret,
+                options = new PlaidAccountOptionsDM
+                {
+                    account_ids = accountIds
+                }
+            };
+
+            var requestJson = JsonConvert.SerializeObject(dataModel);
+            var url = _appSettings.PlaidBaseUrl + "accounts/balance/get";
+
+            var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
+
+            return JsonConvert.DeserializeObject<PlaidAccountRequestRM>(response);
+        }
+
+        public async Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel requestModel)
+        {
+            var dataModel = new PlaidTransactionRequestDM
+            {
+                access_token = requestModel.AccessToken,
+                client_id = _appSettings.PlaidClientId,
+                secret = _appSettings.PlaidSecret,
+                start_date = requestModel.StartDate,
+                end_date = requestModel.EndDate,
+                options = new PlaidTransactionRequestOptionsDM
+                {
+                    account_ids = requestModel.AccountIds,
+                    count = requestModel.Count,
+                    offset = requestModel.Offset
+                }
+            };
+
+            var requestJson = JsonConvert.SerializeObject(dataModel);
+            var url = _appSettings.PlaidBaseUrl + "transactions/get";
+
+            var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
+
+            return JsonConvert.DeserializeObject<PlaidTransactionRequestRM>(response);
         }
     }
 }
