@@ -23,9 +23,8 @@ namespace TooSimple.Models.ViewModels
         public List<SelectListItem> FundingScheduleOptions { get; set; }
         public string FundingScheduleId { get; set; }
         public bool ExpenseFlag { get; set; }
-        public DateTime? FirstCompletionDate { get; set; }
-        public decimal? AmountNeededEachTimeFrame { get; set; }
         public int? RecurrenceTimeFrame { get; set; }
         public List<SelectListItem> RecurrenceTimeFrameOptions { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace TooSimple.Misc.Enum
         Weekly = 1,
         BiWeekly = 2,
         Monthly = 3,
-        BiMonthly = 4
+        BiMonthly = 4,
+        LastDayOfMonth = 5,
     }
 }

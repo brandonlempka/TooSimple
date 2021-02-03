@@ -15,5 +15,6 @@ namespace TooSimple.Models.EFModels
         public decimal Amount { get; set; }
         public DateTime TransferDate { get; set; }
         public string Note { get; set; }
+        public bool AutomatedTransfer { get; set; }
     }
 }

@@ -14,8 +14,6 @@ namespace TooSimple.Models.ViewModels
         public decimal CurrentBalance { get; set; }
         public DateTime? DesiredCompletionDate { get; set; }
         public bool ExpenseFlag { get; set; }
-        public decimal? AmountNeededEachTimeFrame { get; set; }
-        public DateTime? FirstCompletionDate { get; set; }
         public int? RecurrenceTimeFrame { get; set; }
 
     }

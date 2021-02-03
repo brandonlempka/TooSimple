@@ -20,7 +20,7 @@
     {
         <tr>
             <td>@goal.GoalName</td>
-            <td>@goal.CurrentBalance / @goal.AmountNeededEachTimeFrame</td>
+            <td>@goal.CurrentBalance / @goal.GoalAmount</td>
             <td><a href="~/Dashboard/AddEditGoal?id=@goal.GoalId">Edit</a></td>
             <td><a href="~/Dashboard/DeleteGoal?isExpense=true&id=@goal.GoalId">Delete</a></td>
         </tr>

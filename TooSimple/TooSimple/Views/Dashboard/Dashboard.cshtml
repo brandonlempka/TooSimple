@@ -1,6 +1,6 @@
 ﻿@model TooSimple.Models.ViewModels.DashboardVM
 
-@if (Model.AccessToken == null)
+@if (Model.AccountId != null)
 {
     <h2>Get started by adding an account</h2>
     <a href="~/Dashboard/Accounts">Add Account</a>

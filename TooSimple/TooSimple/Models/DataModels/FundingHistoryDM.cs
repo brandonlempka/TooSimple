@@ -3,22 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TooSimple.Models.ActionModels
+namespace TooSimple.Models.DataModels
 {
-    public class DashboardMoveMoneyAM
+    public class FundingHistoryDM
     {
-        public string UserAccountId { get; set; }
+        public string FundingHistoryId { get; set; }
         public string FromAccountId { get; set; }
         public string ToAccountId { get; set; }
         public decimal Amount { get; set; }
-        public string Note { get; set; }
         public DateTime TransferDate { get; set; }
+        public string Note { get; set; }
         public bool AutomatedTransfer { get; set; }
-
-        public DashboardMoveMoneyAM()
-        {
-            AutomatedTransfer = false;
-            TransferDate = DateTime.Now;
-        }
     }
 }

@@ -36,10 +36,9 @@ namespace TooSimple.DataAccessors
                             GoalId = goal.GoalId,
                             GoalName = goal.GoalName,
                             FundingScheduleId = goal.FundingScheduleId,
-                            AmountNeededEachTimeFrame = goal.AmountNeededEachTimeFrame,
                             ExpenseFlag = goal.ExpenseFlag,
-                            FirstCompletionDate = goal.FirstCompletionDate,
-                            RecurrenceTimeFrame = goal.RecurrenceTimeFrame
+                            RecurrenceTimeFrame = goal.RecurrenceTimeFrame,
+                            CreationDate = goal.CreationDate
                         }
             };
 
@@ -58,11 +57,10 @@ namespace TooSimple.DataAccessors
                 GoalId = data.GoalId,
                 GoalName = data.GoalName,
                 FundingScheduleId = data.FundingScheduleId,
-                AmountNeededEachTimeFrame = data.AmountNeededEachTimeFrame,
                 UserAccountId = data.UserAccountId,
                 ExpenseFlag = data.ExpenseFlag,
-                FirstCompletionDate = data.FirstCompletionDate,
-                RecurrenceTimeFrame = data.RecurrenceTimeFrame
+                RecurrenceTimeFrame = data.RecurrenceTimeFrame,
+                CreationDate = data.CreationDate,
             };
         }
 
@@ -80,10 +78,9 @@ namespace TooSimple.DataAccessors
                         GoalName = actionModel.GoalName,
                         UserAccountId = actionModel.UserAccountId,
                         FundingScheduleId = actionModel.FundingScheduleId,
-                        AmountNeededEachTimeFrame = actionModel.AmountNeededEachTimeFrame,
                         ExpenseFlag = actionModel.ExpenseFlag,
-                        FirstCompletionDate = actionModel.FirstCompletionDate,
-                        RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame
+                        RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame,
+                        CreationDate = actionModel.CreationDate,
                     });
 
                     await _db.SaveChangesAsync();
@@ -99,9 +96,7 @@ namespace TooSimple.DataAccessors
                 existingGoal.CurrentBalance = actionModel.CurrentBalance;
                 existingGoal.FundingScheduleId = actionModel.FundingScheduleId;
                 existingGoal.RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame;
-                existingGoal.FirstCompletionDate = actionModel.FirstCompletionDate;
                 existingGoal.ExpenseFlag = actionModel.ExpenseFlag;
-                existingGoal.AmountNeededEachTimeFrame = actionModel.AmountNeededEachTimeFrame;
 
                 await _db.SaveChangesAsync();
 
@@ -221,11 +216,13 @@ namespace TooSimple.DataAccessors
                 {
                     var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.ToAccountId);
                     existingGoal.CurrentBalance += actionModel.Amount;
+                    await _db.SaveChangesAsync();
                 }
                 else if (actionModel.ToAccountId == "0")
                 {
                     var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.FromAccountId);
-                    existingGoal.CurrentBalance += actionModel.Amount;
+                    existingGoal.CurrentBalance -= actionModel.Amount;
+                    await _db.SaveChangesAsync();
                 }
                 else
                 {
@@ -234,7 +231,21 @@ namespace TooSimple.DataAccessors
 
                     fromGoal.CurrentBalance -= actionModel.Amount;
                     toGoal.CurrentBalance += actionModel.Amount;
+                    await _db.SaveChangesAsync();
                 }
+
+
+                var historyEntry = new FundingHistory
+                {
+                    Amount = actionModel.Amount,
+                    FromAccountId = actionModel.FromAccountId,
+                    ToAccountId = actionModel.ToAccountId,
+                    Note = actionModel.Note,
+                    TransferDate = actionModel.TransferDate,
+                    AutomatedTransfer = actionModel.AutomatedTransfer,
+                };
+
+                await _db.FundingHistories.AddAsync(historyEntry);
 
                 await _db.SaveChangesAsync();
                 return StatusRM.CreateSuccess(null, "Successfully moved money.");
@@ -263,6 +274,25 @@ namespace TooSimple.DataAccessors
             accountSum += transactionsSum;
 
             return accountSum;
+        }
+
+        public async Task<FundingHistoryListDM> GetFundingHistoryListDMAsync(string accountId)
+        {
+            return new FundingHistoryListDM
+            {
+                FundingHistories = from history in _db.FundingHistories
+                                   where history.ToAccountId == accountId || history.FromAccountId == accountId
+                                   select new FundingHistoryDM
+                                   {
+                                       Amount = history.Amount,
+                                       AutomatedTransfer = history.AutomatedTransfer,
+                                       FromAccountId = history.FromAccountId,
+                                       ToAccountId = history.ToAccountId,
+                                       FundingHistoryId = history.FundingHistoryId,
+                                       Note = history.Note,
+                                       TransferDate = history.TransferDate
+                                   }
+            };
         }
     }
 }
