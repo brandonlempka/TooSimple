@@ -20,6 +20,7 @@ namespace TooSimple.Models.ViewModels
         public decimal CurrentBalance { get; set; }
         [Required(ErrorMessage = "Required")]
         public DateTime? DesiredCompletionDate { get; set; }
+        public bool Paused { get; set; }
         public List<SelectListItem> FundingScheduleOptions { get; set; }
         public string FundingScheduleId { get; set; }
         public bool ExpenseFlag { get; set; }

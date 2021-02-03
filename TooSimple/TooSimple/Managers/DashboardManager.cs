@@ -281,6 +281,7 @@ namespace TooSimple.Managers
                     GoalName = x.GoalName,
                     ExpenseFlag = x.ExpenseFlag,
                     RecurrenceTimeFrame = x.RecurrenceTimeFrame,
+                    Paused = x.Paused
                 })
             };
 
@@ -335,7 +336,8 @@ namespace TooSimple.Managers
                 FundingScheduleId = existingAccount.FundingScheduleId,
                 RecurrenceTimeFrame = existingAccount.RecurrenceTimeFrame,
                 FundingScheduleOptions = new List<SelectListItem>(),
-                RecurrenceTimeFrameOptions = new List<SelectListItem>()
+                RecurrenceTimeFrameOptions = new List<SelectListItem>(),
+                Paused = existingAccount.Paused,
             };
 
             if (fundingSchedules.FundingSchedules.Any())
@@ -600,11 +602,11 @@ namespace TooSimple.Managers
         public async Task UpdateGoalFunding(string userId)
         {
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-            var today = Convert.ToDateTime("2021-02-09");
+            var today = DateTime.Now.Date;
             var schedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(userId);
 
             //Goal calculation
-            foreach (var goal in goals.Goals.ToList())
+            foreach (var goal in goals.Goals.Where(g => !g.Paused).ToList())
             {
                 if (goal.DesiredCompletionDate > today || goal.ExpenseFlag)
                 {

@@ -15,6 +15,7 @@ namespace TooSimple.Models.EFModels
         public decimal GoalAmount { get; set; }
         public decimal CurrentBalance { get; set; }
         public DateTime DesiredCompletionDate { get; set; }
+        public bool Paused { get; set; }
         public string FundingScheduleId { get; set; }
         public bool ExpenseFlag { get; set; }
         public int? RecurrenceTimeFrame { get; set; }

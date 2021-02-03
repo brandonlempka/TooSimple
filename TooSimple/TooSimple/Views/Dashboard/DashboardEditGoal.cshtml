@@ -25,6 +25,10 @@
                 @Html.LabelFor(m => m.FundingScheduleId, "Funding Schedule", new { @class = "form-check-label" })
                 @Html.DropDownListFor(m => m.FundingScheduleId, Model.FundingScheduleOptions, new { @class = "form-control" })
             </div>
+            <div class="row">
+                @Html.CheckBoxFor(m => m.Paused, new { @class = "form-check-label" })
+                @Html.LabelFor(m => m.Paused, "Pause", new { @class = "form-check-label"})
+            </div>
         </div>
 
         <div class="row">

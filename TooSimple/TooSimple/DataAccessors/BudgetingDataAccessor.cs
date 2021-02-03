@@ -38,7 +38,8 @@ namespace TooSimple.DataAccessors
                             FundingScheduleId = goal.FundingScheduleId,
                             ExpenseFlag = goal.ExpenseFlag,
                             RecurrenceTimeFrame = goal.RecurrenceTimeFrame,
-                            CreationDate = goal.CreationDate
+                            CreationDate = goal.CreationDate,
+                            Paused = goal.Paused
                         }
             };
 
@@ -61,6 +62,7 @@ namespace TooSimple.DataAccessors
                 ExpenseFlag = data.ExpenseFlag,
                 RecurrenceTimeFrame = data.RecurrenceTimeFrame,
                 CreationDate = data.CreationDate,
+                Paused = data.Paused
             };
         }
 
@@ -81,6 +83,7 @@ namespace TooSimple.DataAccessors
                         ExpenseFlag = actionModel.ExpenseFlag,
                         RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame,
                         CreationDate = actionModel.CreationDate,
+                        Paused = actionModel.Paused
                     });
 
                     await _db.SaveChangesAsync();
@@ -97,6 +100,7 @@ namespace TooSimple.DataAccessors
                 existingGoal.FundingScheduleId = actionModel.FundingScheduleId;
                 existingGoal.RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame;
                 existingGoal.ExpenseFlag = actionModel.ExpenseFlag;
+                existingGoal.Paused = actionModel.Paused;
 
                 await _db.SaveChangesAsync();
 
