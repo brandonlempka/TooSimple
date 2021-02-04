@@ -137,6 +137,8 @@ namespace TooSimple.Managers
         {
             var genericError = "Something went wrong while contacting Plaid.";
             var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken, accountIds);
+            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+            var goalsList = goals.Goals.ToList();
 
             if (account == null)
             {
@@ -191,6 +193,14 @@ namespace TooSimple.Managers
                 TransactionCode = x.transaction_code,
                 TransactionId = x.transaction_id
             }).ToList();
+
+            //Auto spend
+            foreach (var transaction in newTransactions)
+            {
+                var spendingFrom = goalsList.FirstOrDefault(g => g.AutoSpendMerchantName == transaction.MerchantName && g.AutoSpendMerchantName != null);
+                if (spendingFrom != null)
+                    transaction.SpendingFrom = spendingFrom.GoalId;
+            }
 
             transactionsAddResponse = await _accountDataAccessor.SavePlaidTransactionData(newTransactions);
 
@@ -327,7 +337,6 @@ namespace TooSimple.Managers
             var viewModel = new DashboardSaveGoalVM
             {
                 GoalAmount = existingAccount.GoalAmount,
-                CurrentBalance = existingAccount.CurrentBalance,
                 DesiredCompletionDate = existingAccount.DesiredCompletionDate,
                 GoalId = existingAccount.GoalId,
                 GoalName = existingAccount.GoalName,
@@ -338,6 +347,7 @@ namespace TooSimple.Managers
                 FundingScheduleOptions = new List<SelectListItem>(),
                 RecurrenceTimeFrameOptions = new List<SelectListItem>(),
                 Paused = existingAccount.Paused,
+                AutoSpendMerchantName = existingAccount.AutoSpendMerchantName
             };
 
             if (fundingSchedules.FundingSchedules.Any())

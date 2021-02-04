@@ -39,7 +39,8 @@ namespace TooSimple.DataAccessors
                             ExpenseFlag = goal.ExpenseFlag,
                             RecurrenceTimeFrame = goal.RecurrenceTimeFrame,
                             CreationDate = goal.CreationDate,
-                            Paused = goal.Paused
+                            Paused = goal.Paused,                
+                            AutoSpendMerchantName = goal.AutoSpendMerchantName,
                         }
             };
 
@@ -62,7 +63,8 @@ namespace TooSimple.DataAccessors
                 ExpenseFlag = data.ExpenseFlag,
                 RecurrenceTimeFrame = data.RecurrenceTimeFrame,
                 CreationDate = data.CreationDate,
-                Paused = data.Paused
+                Paused = data.Paused,
+                AutoSpendMerchantName = data.AutoSpendMerchantName,
             };
         }
 
@@ -83,7 +85,8 @@ namespace TooSimple.DataAccessors
                         ExpenseFlag = actionModel.ExpenseFlag,
                         RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame,
                         CreationDate = actionModel.CreationDate,
-                        Paused = actionModel.Paused
+                        Paused = actionModel.Paused,
+                        AutoSpendMerchantName = actionModel.AutoSpendMerchantName,
                     });
 
                     await _db.SaveChangesAsync();
@@ -96,11 +99,11 @@ namespace TooSimple.DataAccessors
                 existingGoal.GoalName = actionModel.GoalName;
                 existingGoal.GoalAmount = actionModel.GoalAmount;
                 existingGoal.DesiredCompletionDate = actionModel.DesiredCompletionDate;
-                existingGoal.CurrentBalance = actionModel.CurrentBalance;
                 existingGoal.FundingScheduleId = actionModel.FundingScheduleId;
                 existingGoal.RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame;
                 existingGoal.ExpenseFlag = actionModel.ExpenseFlag;
                 existingGoal.Paused = actionModel.Paused;
+                existingGoal.AutoSpendMerchantName = actionModel.AutoSpendMerchantName;
 
                 await _db.SaveChangesAsync();
 

@@ -29,6 +29,10 @@
                 @Html.CheckBoxFor(m => m.Paused, new { @class = "form-check-label" })
                 @Html.LabelFor(m => m.Paused, "Pause", new { @class = "form-check-label"})
             </div>
+            <div class="row">
+                @Html.LabelFor(m => m.AutoSpendMerchantName, "Auto Spend Merchant Name", new { @class = "form-check-label"})
+                @Html.TextBoxFor(m => m.AutoSpendMerchantName, new { @class = "form-control", autocomplete = "off" })
+            </div>
         </div>
 
         <div class="row">
@@ -67,6 +71,11 @@ else
                 @Html.LabelFor(m => m.FundingScheduleId, "Funding Schedule", new { @class = "form-check-label" })
                 @Html.DropDownListFor(m => m.FundingScheduleId, Model.FundingScheduleOptions, new { @class = "form-control" })
             </div>
+            <div class="row">
+                @Html.LabelFor(m => m.AutoSpendMerchantName, "Auto Spend Merchant Name", new { @class = "form-check-label" })
+                @Html.TextBoxFor(m => m.AutoSpendMerchantName, new { @class = "form-control", autocomplete = "off" })
+            </div>
+
         </div>
 
         <div class="row">

@@ -11,8 +11,8 @@ namespace TooSimple.Models.ActionModels
         public string UserAccountId { get; set; }
         public string GoalName { get; set; }
         public decimal GoalAmount { get; set; }
-        public decimal CurrentBalance { get; set; }
         public DateTime DesiredCompletionDate { get; set; }
+        public string AutoSpendMerchantName { get; set; }
         public bool Paused { get; set; }
         public string FundingScheduleId { get; set; }
         public bool ExpenseFlag { get; set; }

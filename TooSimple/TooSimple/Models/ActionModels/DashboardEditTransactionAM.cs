@@ -12,5 +12,6 @@ namespace TooSimple.Models.ActionModels
         public string SpendingFromId { get; set; }
         public string InternalCategory { get; set; }
         public string UserAccountId { get; set; }
+        public bool AlwaysSpendFromGoal { get; set; }
     }
 }
