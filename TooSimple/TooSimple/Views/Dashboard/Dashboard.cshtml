@@ -8,15 +8,20 @@
 else
 {
     <p>Available Balance: $@Model.CurrentBalance</p>
+    @if (!string.IsNullOrWhiteSpace(Model.LastUpdated))
+    {
+        <p>Last updated @Model.LastUpdated</p>
+    }
 }
 
 @if (Model.Transactions.Any())
 { 
-<table>
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Date</th>
-            <th>Transaction</th>
+            <th>Merchant Name</th>
+            <th>Transaction Name</th>
             <th>Amount</th>
             <th>Spent From</th>
             <th>Edit Transaction</th>
@@ -30,6 +35,9 @@ else
             </td>
             <td>
                 @transaction.MerchantName
+            </td>
+            <td>
+                @transaction.Name
             </td>
             <td>
                 @transaction.Amount

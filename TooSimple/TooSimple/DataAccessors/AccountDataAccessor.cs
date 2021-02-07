@@ -51,9 +51,10 @@ namespace TooSimple.DataAccessors
                                        Mask = x.Mask,
                                        Name = x.Name,
                                        NickName = x.NickName,
+                                       LastUpdated = x.LastUpdated,
                                        Transactions = from tran in _db.Transactions
                                                       where tran.AccountId == accountId
-                                                      select new TransactionListDM
+                                                      select new TransactionDM
                                                       {
                                                           AccountId = tran.AccountId,
                                                           AccountOwner = tran.AccountOwner,
@@ -95,9 +96,10 @@ namespace TooSimple.DataAccessors
                     Mask = x.Mask,
                     Name = x.Name,
                     NickName = x.NickName,
+                    LastUpdated = x.LastUpdated,
                     Transactions = from tran in _db.Transactions
                                    where tran.UserAccountId == userId
-                                   select new TransactionListDM
+                                   select new TransactionDM
                                    {
                                        AccountId = tran.AccountId,
                                        AccountOwner = tran.AccountOwner,
@@ -310,6 +312,42 @@ namespace TooSimple.DataAccessors
                 return StatusRM.CreateError(ex);
             }
         }
+
+        public async Task<TransactionListDM> GetSpendingFromTransactions(string userId)
+        {
+            var dataModel = new TransactionListDM
+            {
+                Transactions = from tran in _db.Transactions
+                               join account in _db.Accounts on tran.AccountId equals account.AccountId
+                               where !string.IsNullOrWhiteSpace(tran.SpendingFrom)
+                               select new TransactionDM
+                               {
+                                   AccountId = tran.AccountId,
+                                   AccountOwner = tran.AccountOwner,
+                                   Address = tran.Address,
+                                   Amount = tran.Amount,
+                                   UserAccountId = tran.UserAccountId,
+                                   City = tran.City,
+                                   Country = tran.Country,
+                                   CurrencyCode = tran.CurrencyCode,
+                                   InternalCategory = tran.InternalCategory,
+                                   MerchantName = tran.MerchantName,
+                                   Name = tran.Name,
+                                   PaymentMethod = tran.PaymentMethod,
+                                   Pending = tran.Pending,
+                                   PostalCode = tran.PostalCode,
+                                   ReferenceNumber = tran.ReferenceNumber,
+                                   Region = tran.Region,
+                                   SpendingFrom = tran.SpendingFrom,
+                                   TransactionCode = tran.TransactionCode,
+                                   TransactionDate = tran.TransactionDate,
+                                   TransactionId = tran.TransactionId
+                               }
+            };
+
+            return dataModel;
+        }
+
         public async Task<TransactionDM> GetTransactionDMAsync(string transactionId)
         {
             var transaction = await _db.Transactions.FirstOrDefaultAsync(tran => tran.TransactionId == transactionId);
@@ -356,7 +394,7 @@ namespace TooSimple.DataAccessors
 
                 return StatusRM.CreateSuccess(null, "Success");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusRM.CreateError(ex);
             }

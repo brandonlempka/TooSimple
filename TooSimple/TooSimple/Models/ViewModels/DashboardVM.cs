@@ -9,6 +9,7 @@ namespace TooSimple.Models.ViewModels
     {
         public string AccountId { get; set; }
         public int AccountTypeId { get; set; }
+        public string LastUpdated { get; set; }
         public string Mask { get; set; }
         public string Name { get; set; }
         public string NickName { get; set; }

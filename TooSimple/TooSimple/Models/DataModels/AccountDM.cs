@@ -18,6 +18,6 @@ namespace TooSimple.Models.DataModels
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
         public DateTime? LastUpdated { get; set; }
-        public IEnumerable<TransactionListDM> Transactions { get; set; }
+        public IEnumerable<TransactionDM> Transactions { get; set; }
     }
 }

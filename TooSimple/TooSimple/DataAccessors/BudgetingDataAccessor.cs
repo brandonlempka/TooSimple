@@ -274,7 +274,7 @@ namespace TooSimple.DataAccessors
             foreach (var account in accountsDM.Accounts)
             {
                 transactionsSum += account.Transactions.Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom))
-                    .Select(x => x.Amount).Sum();
+                    .Select(x => x.Amount ?? 0).Sum();
             }
 
             accountSum -= goalsSum;

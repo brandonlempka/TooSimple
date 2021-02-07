@@ -35,6 +35,7 @@ namespace TooSimple.Managers
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var accountNeedsUpdating = true;
 
             if (!dataModel.Accounts.Any())
             {
@@ -52,19 +53,25 @@ namespace TooSimple.Managers
 
             var responseList = new List<StatusRM>();
 
-            foreach (var token in accountGroup)
-            {
-                var ids = token.AccountIds.ToArray();
+            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15));
 
-                var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids);
-                responseList.Add(newResponse);
+            if (outdatedAccounts.Any())
+            {
+                foreach (var token in accountGroup)
+                {
+                    var ids = token.AccountIds.ToArray();
+
+                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids);
+                    responseList.Add(newResponse);
+                }
             }
 
-            var updatedData = await _accountDataAccessor.GetAccountDMAsync(userId);
+            dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
 
             var transactionList = new List<TransactionListVM>();
 
-            foreach (var account in updatedData.Accounts)
+            foreach (var account in dataModel.Accounts)
             {
                 var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
                 {
@@ -85,22 +92,38 @@ namespace TooSimple.Managers
                     Region = x.Region,
                     SpendingFrom = x.SpendingFrom,
                     TransactionCode = x.TransactionCode,
-                    TransactionDate = x.TransactionDate,
+                    TransactionDate = x.TransactionDate?.ToString("MM/dd/yyyy"),
                     TransactionId = x.TransactionId,
-                }).ToList();
+                }).OrderByDescending(y => y.TransactionDate).ToList();
 
                 transactionList.AddRange(transaction);
 
             }
-            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-            if (goals.Goals.Any())
-                await UpdateGoalFunding(userId);
 
-            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(updatedData, userId);
+            if (goals.Goals.Any())
+            {
+                await UpdateGoalFunding(userId);
+            }
+
+            foreach (var tran in transactionList)
+            {
+                var goalName = goals.Goals.EmptyIfNull().FirstOrDefault(g => g.GoalId == tran.SpendingFrom);
+                if (goalName != null)
+                {
+                    tran.SpendingFrom = goalName.GoalName;
+                }
+                else
+                {
+                    tran.SpendingFrom = "Ready to Spend";
+                }
+            }
+
+            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(dataModel, userId);
             var viewModel = new DashboardVM
             {
                 CurrentBalance = currentBalance,
-                Transactions = transactionList
+                Transactions = transactionList,
+                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
             };
 
             var failures = responseList.Where(x => x.Success != true);
@@ -155,6 +178,7 @@ namespace TooSimple.Managers
                 CurrencyCode = x.balances.iso_currency_code,
                 Mask = x.mask,
                 Name = x.name,
+                LastUpdated = DateTime.Now
             });
 
             var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(plaidAccount);
@@ -277,15 +301,17 @@ namespace TooSimple.Managers
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-
-            return new DashboardGoalListVM
+            //var accounts = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var transactions = await _accountDataAccessor.GetSpendingFromTransactions(userId);
+            
+            var viewModel = new DashboardGoalListVM
             {
                 Goals = dataModel.Goals.Where(goal => goal.ExpenseFlag == isExpense)
                 .Select(x => new DashboardGoalVM
                 {
                     GoalAmount = x.GoalAmount,
                     UserAccountId = x.UserAccountId,
-                    CurrentBalance = x.CurrentBalance,
+                    CurrentBalance = x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0),
                     DesiredCompletionDate = x.DesiredCompletionDate,
                     GoalId = x.GoalId,
                     GoalName = x.GoalName,
@@ -295,6 +321,13 @@ namespace TooSimple.Managers
                 })
             };
 
+            //foreach (var goal in viewModel.Goals)
+            //{
+            //    var sum = transactions.Transactions.Where(t => t.SpendingFrom == goal.GoalId).Sum(y => y.Amount);
+            //    goal.CurrentBalance = goal.CurrentBalance - sum ?? 0;
+            //}
+
+            return viewModel;
         }
 
         public async Task<DashboardSaveGoalVM> GetSaveGoalVMAsync(string goalId, ClaimsPrincipal currentUser, bool isExpense)
@@ -771,7 +804,7 @@ namespace TooSimple.Managers
             {
                 nextContribution = lastFunded.Date;
                 while (nextContribution >= scheduleFirstDate)
-                { 
+                {
                     switch (frequency)
                     {
                         case 1:
@@ -787,11 +820,11 @@ namespace TooSimple.Managers
                             scheduleFirstDate = scheduleFirstDate.AddMonths(2).Date;
                             break;
                             //to do
-                        //case 5:
-                        //    var newMonth = scheduleFirstDate.AddDays(1);
-                        //    nextContribution = new DateTime(newMonth.Day,
-                        //        newMonth.Month,
-                        //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
+                            //case 5:
+                            //    var newMonth = scheduleFirstDate.AddDays(1);
+                            //    nextContribution = new DateTime(newMonth.Day,
+                            //        newMonth.Month,
+                            //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
                             //break;
                     }
                 }
