@@ -1,4 +1,5 @@
 ﻿@model TooSimple.Models.ViewModels.DashboardFundingScheduleVM
+<h1 class="mb-4">@Model.FundingScheduleName</h1>
 
 <form id="editFundingSchedule" action="~/Dashboard/SaveFundingSchedule" method="post">
     @Html.HiddenFor(m => m.FundingScheduleId)
@@ -10,13 +11,13 @@
         </div>
         <div class="row">
             @Html.LabelFor(m => m.FirstContributionDate, "Date", new { @class = "form-check-label" })
-            @Html.TextBoxFor(m => m.FirstContributionDate, new { @class = "form-control" })
+            @Html.TextBoxFor(m => m.FirstContributionDate, new { @class = "form-control datepicker" })
         </div>
         <div class="row">
             @Html.LabelFor(m => m.Frequency, "Frequency", new { @class = "form-check-label" })
             @Html.DropDownListFor(m => m.Frequency, Model.FrequencyList, new { @class = "form-control" })
         </div>
-        <div class="row">
+        <div class="row mt-2">
             <button id="btnSaveSchedule" class="btn btn-primary">Save</button>
         </div>
     </div>

@@ -12,7 +12,9 @@ namespace TooSimple.Models.ViewModels
         public string AccountName { get; set; }
         public string AccountOwner { get; set; }
         public decimal? Amount { get; set; }
-        public string TransactionDate { get; set; }
+        public string AmountDisplayValue { get; set; }
+        public DateTime? TransactionDate { get; set; }
+        public string TransactionDateDisplayValue { get; set; }
         public string CurrencyCode { get; set; }
         public string Address { get; set; }
         public string City { get; set; }

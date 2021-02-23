@@ -182,87 +182,123 @@ namespace TooSimple.DataAccessors
             {
                 foreach (var transaction in dataModel)
                 {
-                    var sql = @"MERGE INTO [SQL-TooSimple].[dbo].[Transaction]
-                                USING 
-                                (
-                                    SELECT   @TransactionId as Id
-                            
-                                ) AS entity
-                                ON  [SQL-TooSimple].[dbo].[Transaction].[TransactionId] = entity.Id
-                                WHEN NOT MATCHED THEN
-                                    INSERT (TransactionId
-                                        , AccountId
-                                        , AccountOwner
-                                        , Amount
-                                        , TransactionDate
-                                        , CurrencyCode
-                                        , Address
-                                        , City
-                                        , Country
-                                        , PostalCode
-                                        , Region
-                                        , MerchantName
-                                        , Name
-                                        , PaymentMethod
-                                        , ReferenceNumber
-                                        , Pending
-                                        , TransactionCode
-                                        , UnofficialCurrencyCode
-                                        , SpendingFrom
-                                        , InternalCategory
-                                        , UserAccountId)
-                                    VALUES (@TransactionId
-                                        , @AccountId
-                                        , @AccountOwner
-                                        , @Amount
-                                        , @TransactionDate
-                                        , @CurrencyCode
-                                        , @Address
-                                        , @City
-                                        , @Country
-                                        , @PostalCode
-                                        , @Region
-                                        , @MerchantName
-                                        , @Name
-                                        , @PaymentMethod
-                                        , @ReferenceNumber
-                                        , @Pending
-                                        , @TransactionCode
-                                        , @UnofficialCurrencyCode
-                                        , @SpendingFrom
-                                        , @InternalCategory
-                                        , @UserAccountId);";
+                    var existingTransaction = await _db.Transactions.FirstOrDefaultAsync(t => t.TransactionId == transaction.TransactionId);
 
-                    object[] parameters =
+                    if (existingTransaction == null)
                     {
-                        new SqlParameter("@TransactionId", DBExtensions.DBValue(transaction.TransactionId)),
-                        new SqlParameter("@AccountId", DBExtensions.DBValue(transaction.AccountId)),
-                        new SqlParameter("@AccountOwner", DBExtensions.DBValue(transaction.AccountOwner)),
-                        new SqlParameter("@Amount", DBExtensions.DBValue(transaction.Amount)),
-                        new SqlParameter("@TransactionDate", DBExtensions.DBValue(transaction.TransactionDate)),
-                        new SqlParameter("@CurrencyCode", DBExtensions.DBValue(transaction.CurrencyCode)),
-                        new SqlParameter("@Address", DBExtensions.DBValue(transaction.Address)),
-                        new SqlParameter("@City", DBExtensions.DBValue(transaction.City)),
-                        new SqlParameter("@Country", DBExtensions.DBValue(transaction.Country)),
-                        new SqlParameter("@PostalCode", DBExtensions.DBValue(transaction.PostalCode)),
-                        new SqlParameter("@Region", DBExtensions.DBValue(transaction.Region)),
-                        new SqlParameter("@MerchantName", DBExtensions.DBValue(transaction.MerchantName)),
-                        new SqlParameter("@Name", DBExtensions.DBValue(transaction.Name)),
-                        new SqlParameter("@PaymentMethod", DBExtensions.DBValue(transaction.PaymentMethod)),
-                        new SqlParameter("@ReferenceNumber", DBExtensions.DBValue(transaction.ReferenceNumber)),
-                        new SqlParameter("@Pending", DBExtensions.DBValue(transaction.Pending)),
-                        new SqlParameter("@TransactionCode", DBExtensions.DBValue(transaction.TransactionCode)),
-                        new SqlParameter("@UnofficialCurrencyCode", DBExtensions.DBValue(transaction.CurrencyCode)),
-                        new SqlParameter("@SpendingFrom", DBExtensions.DBValue(transaction.SpendingFrom)),
-                        new SqlParameter("@InternalCategory", DBExtensions.DBValue(transaction.InternalCategory)),
-                        new SqlParameter("@UserAccountId", DBExtensions.DBValue(transaction.UserAccountId)),
-                    };
-
-                    await _db.Database.ExecuteSqlRawAsync(sql, parameters);
+                        await _db.Transactions.AddAsync(new Transaction
+                        {
+                            TransactionId = transaction.TransactionId,
+                                            AccountId = transaction.AccountId,
+                                            AccountOwner = transaction.AccountOwner,
+                                            Amount = transaction.Amount ?? 0,
+                                            TransactionDate = transaction.TransactionDate,
+                                            CurrencyCode = transaction.CurrencyCode,
+                                            Address = transaction.Address,
+                                            City = transaction.City,
+                                            Country = transaction.Country,
+                                            PostalCode = transaction.PostalCode,
+                                            Region = transaction.Region,
+                                            MerchantName = transaction.MerchantName,
+                                            Name = transaction.Name,
+                                            PaymentMethod = transaction.PaymentMethod,
+                                            ReferenceNumber = transaction.ReferenceNumber,
+                                            Pending = transaction.Pending,
+                                            TransactionCode = transaction.TransactionCode,
+                                            UnofficialCurrencyCode = transaction.CurrencyCode,
+                                            SpendingFrom = transaction.SpendingFrom,
+                                            InternalCategory = transaction.InternalCategory,
+                                            UserAccountId = transaction.UserAccountId
+                        });
+                    }
                 }
 
-                //await context.SaveChangesAsync();
-                return StatusRM.CreateSuccess(null, "Successfully updated transactions.");
+                await _db.SaveChangesAsync();
+                return StatusRM.CreateSuccess(null, "Success");
+
+                //foreach (var transaction in dataModel)
+                //{
+                //    var sql = @"MERGE INTO [dbo].[Transaction]
+                //                USING 
+                //                (
+                //                    SELECT   @TransactionId as Id
+                            
+                //                ) AS entity
+                //                ON  [dbo].[Transaction].[TransactionId] = entity.Id
+                //                WHEN NOT MATCHED THEN
+                //                    INSERT (TransactionId
+                //                        , AccountId
+                //                        , AccountOwner
+                //                        , Amount
+                //                        , TransactionDate
+                //                        , CurrencyCode
+                //                        , Address
+                //                        , City
+                //                        , Country
+                //                        , PostalCode
+                //                        , Region
+                //                        , MerchantName
+                //                        , Name
+                //                        , PaymentMethod
+                //                        , ReferenceNumber
+                //                        , Pending
+                //                        , TransactionCode
+                //                        , UnofficialCurrencyCode
+                //                        , SpendingFrom
+                //                        , InternalCategory
+                //                        , UserAccountId)
+                //                    VALUES (@TransactionId
+                //                        , @AccountId
+                //                        , @AccountOwner
+                //                        , @Amount
+                //                        , @TransactionDate
+                //                        , @CurrencyCode
+                //                        , @Address
+                //                        , @City
+                //                        , @Country
+                //                        , @PostalCode
+                //                        , @Region
+                //                        , @MerchantName
+                //                        , @Name
+                //                        , @PaymentMethod
+                //                        , @ReferenceNumber
+                //                        , @Pending
+                //                        , @TransactionCode
+                //                        , @UnofficialCurrencyCode
+                //                        , @SpendingFrom
+                //                        , @InternalCategory
+                //                        , @UserAccountId);";
+
+                //    object[] parameters =
+                //    {
+                //        new SqlParameter("@TransactionId", DBExtensions.DBValue(transaction.TransactionId)),
+                //        new SqlParameter("@AccountId", DBExtensions.DBValue(transaction.AccountId)),
+                //        new SqlParameter("@AccountOwner", DBExtensions.DBValue(transaction.AccountOwner)),
+                //        new SqlParameter("@Amount", DBExtensions.DBValue(transaction.Amount)),
+                //        new SqlParameter("@TransactionDate", DBExtensions.DBValue(transaction.TransactionDate)),
+                //        new SqlParameter("@CurrencyCode", DBExtensions.DBValue(transaction.CurrencyCode)),
+                //        new SqlParameter("@Address", DBExtensions.DBValue(transaction.Address)),
+                //        new SqlParameter("@City", DBExtensions.DBValue(transaction.City)),
+                //        new SqlParameter("@Country", DBExtensions.DBValue(transaction.Country)),
+                //        new SqlParameter("@PostalCode", DBExtensions.DBValue(transaction.PostalCode)),
+                //        new SqlParameter("@Region", DBExtensions.DBValue(transaction.Region)),
+                //        new SqlParameter("@MerchantName", DBExtensions.DBValue(transaction.MerchantName)),
+                //        new SqlParameter("@Name", DBExtensions.DBValue(transaction.Name)),
+                //        new SqlParameter("@PaymentMethod", DBExtensions.DBValue(transaction.PaymentMethod)),
+                //        new SqlParameter("@ReferenceNumber", DBExtensions.DBValue(transaction.ReferenceNumber)),
+                //        new SqlParameter("@Pending", DBExtensions.DBValue(transaction.Pending)),
+                //        new SqlParameter("@TransactionCode", DBExtensions.DBValue(transaction.TransactionCode)),
+                //        new SqlParameter("@UnofficialCurrencyCode", DBExtensions.DBValue(transaction.CurrencyCode)),
+                //        new SqlParameter("@SpendingFrom", DBExtensions.DBValue(transaction.SpendingFrom)),
+                //        new SqlParameter("@InternalCategory", DBExtensions.DBValue(transaction.InternalCategory)),
+                //        new SqlParameter("@UserAccountId", DBExtensions.DBValue(transaction.UserAccountId)),
+                //    };
+
+                //    await _db.Database.ExecuteSqlRawAsync(sql, parameters);
+                //}
+
+                ////await context.SaveChangesAsync();
+                //return StatusRM.CreateSuccess(null, "Successfully updated transactions.");
             }
             catch (Exception ex)
             {

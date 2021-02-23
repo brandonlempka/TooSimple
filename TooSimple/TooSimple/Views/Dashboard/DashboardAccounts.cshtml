@@ -1,5 +1,10 @@
 ﻿@model TooSimple.Models.ViewModels.DashboardAccountsVM
-<button onclick="startLink()">Add Account</button>
+<h1 class="mb-4">Accounts</h1>
+<div class="row">
+    <div class="col-sm-6 mb-2">
+        <button class="btn btn-primary" onclick="startLink()">Add Account</button>
+    </div>
+</div>
 
 <table class="table table-striped">
     <thead>
@@ -9,17 +14,17 @@
             <th>Delete</th>
         </tr>
     </thead>
-    @foreach(var account in Model.Accounts)
+    @foreach (var account in Model.Accounts)
     {
         <tr>
             <td>
-                @account.Name
+                @account.NickName
             </td>
             <td>
-                <a href="~/Dashboard/LoadAccount?id=@account.AccountId">Edit</a>
+                <a href="~/Dashboard/LoadAccount?id=@account.AccountId"><span class="material-icons">mode_edit</span></a>
             </td>
             <td>
-                <a href="~/Dashboard/DeleteAccount?id=@account.AccountId">Delete</a>
+                <a href="~/Dashboard/DeleteAccount?id=@account.AccountId"><span class="material-icons">delete</span></a>
             </td>
         </tr>
     }
@@ -41,9 +46,9 @@
 
 
 
-<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
     const handler = Plaid.create({
         token: '@Model.LinkToken',
         onSuccess: (public_token, metadata) => {
@@ -69,4 +74,4 @@
     function startLink() {
         handler.open();
     }
-</script>
+    </script>

@@ -80,6 +80,7 @@ namespace TooSimple.Managers
                     AccountOwner = x.AccountOwner,
                     Address = x.Address,
                     Amount = x.Amount,
+                    AmountDisplayValue = x.Amount?.ToString("c") ?? "$0.00",
                     City = x.City,
                     Country = x.Country,
                     CurrencyCode = x.CurrencyCode,
@@ -92,9 +93,10 @@ namespace TooSimple.Managers
                     Region = x.Region,
                     SpendingFrom = x.SpendingFrom,
                     TransactionCode = x.TransactionCode,
-                    TransactionDate = x.TransactionDate?.ToString("MM/dd/yyyy"),
+                    TransactionDate = x.TransactionDate,
+                    TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy"),
                     TransactionId = x.TransactionId,
-                }).OrderByDescending(y => y.TransactionDate).ToList();
+                }).ToList();
 
                 transactionList.AddRange(transaction);
 
@@ -122,7 +124,7 @@ namespace TooSimple.Managers
             var viewModel = new DashboardVM
             {
                 CurrentBalance = currentBalance,
-                Transactions = transactionList,
+                Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
                 LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
             };
 
@@ -266,7 +268,7 @@ namespace TooSimple.Managers
                     CurrencyCode = account.CurrencyCode,
                     LastUpdated = account.LastUpdated,
                     Name = account.Name,
-                    NickName = account.NickName
+                    NickName = account.NickName ?? account.Name
                 })
             };
 
@@ -282,7 +284,7 @@ namespace TooSimple.Managers
             return new DashboardEditAccountVM
             {
                 AccountId = account.AccountId,
-                NickName = account.NickName
+                NickName = account.NickName ?? account.Name
             };
         }
 
@@ -301,31 +303,26 @@ namespace TooSimple.Managers
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-            //var accounts = await _accountDataAccessor.GetAccountDMAsync(userId);
             var transactions = await _accountDataAccessor.GetSpendingFromTransactions(userId);
-            
+
             var viewModel = new DashboardGoalListVM
             {
                 Goals = dataModel.Goals.Where(goal => goal.ExpenseFlag == isExpense)
                 .Select(x => new DashboardGoalVM
                 {
-                    GoalAmount = x.GoalAmount,
+                    GoalAmount = x.GoalAmount.ToString("c"),
                     UserAccountId = x.UserAccountId,
-                    CurrentBalance = x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0),
+                    CurrentBalance = (x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0)).ToString("c"),
                     DesiredCompletionDate = x.DesiredCompletionDate,
                     GoalId = x.GoalId,
                     GoalName = x.GoalName,
                     ExpenseFlag = x.ExpenseFlag,
                     RecurrenceTimeFrame = x.RecurrenceTimeFrame,
-                    Paused = x.Paused
+                    Paused = x.Paused,
+                    ProgressPercent = (x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount)) == 0 ? "0%" 
+                        :  (x.GoalAmount / x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0)).ToString() + "%")
                 })
             };
-
-            //foreach (var goal in viewModel.Goals)
-            //{
-            //    var sum = transactions.Transactions.Where(t => t.SpendingFrom == goal.GoalId).Sum(y => y.Amount);
-            //    goal.CurrentBalance = goal.CurrentBalance - sum ?? 0;
-            //}
 
             return viewModel;
         }
@@ -677,7 +674,7 @@ namespace TooSimple.Managers
 
                             nextContribution = CalculateNextGoalContributionDate(lastFunded, schedule.FirstContributionDate, schedule.Frequency);
 
-                            while (nextContribution > lastFunded && nextContribution < today)
+                            while (nextContribution > lastFunded && nextContribution <= today)
                             {
                                 int contributionsRemaining = 0;
 
@@ -689,49 +686,49 @@ namespace TooSimple.Managers
 
                                     if (goal.RecurrenceTimeFrame == 1)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddDays(7);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 2)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddDays(14);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 3)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddMonths(1);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 4)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddMonths(2);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 5)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddMonths(3);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 6)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddMonths(6);
                                         }
                                     }
                                     else if (goal.RecurrenceTimeFrame == 7)
                                     {
-                                        while (today > nextExpenseDate)
+                                        while (today >= nextExpenseDate)
                                         {
                                             nextExpenseDate = nextExpenseDate.AddYears(1);
                                         }
@@ -772,28 +769,68 @@ namespace TooSimple.Managers
 
         private int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency)
         {
-            var dateDiff = 0;
+            var nextContribution = lastContributed;
+            var numberOfContributionsRemaining = 0;
 
             switch (frequency)
             {
                 case 1:
-                    dateDiff = (completionDate - lastContributed).Days;
-                    return dateDiff / 7;
+                    while (completionDate > nextContribution)
+                    {
+                        nextContribution = nextContribution.AddDays(7);
+                        numberOfContributionsRemaining++;
+                    }
+                    break;
                 case 2:
-                    dateDiff = (completionDate - lastContributed).Days;
-                    return dateDiff / 14;
+                    while (completionDate > nextContribution)
+                    {
+                        nextContribution = nextContribution.AddDays(14);
+                        numberOfContributionsRemaining++;
+                    }
+                    break;
                 case 3:
-                    dateDiff = (completionDate.Month - lastContributed.Month);
-                    return dateDiff;
+                    while (completionDate > nextContribution)
+                    {
+                        nextContribution = nextContribution.AddMonths(1);
+                        numberOfContributionsRemaining++;
+                    }
+                    break;
                 case 4:
-                    dateDiff = (completionDate.Month - lastContributed.Month);
-                    return dateDiff / 2;
-                //to do
-                //case 5:
-                //    dateDiff = ()
+                    while (completionDate > nextContribution)
+                    {
+                        nextContribution = nextContribution.AddMonths(2);
+                        numberOfContributionsRemaining++;
+                    }
+                    break;
                 default:
                     return 0;
             }
+
+            return numberOfContributionsRemaining;
+
+
+            //var dateDiff = 0;
+
+            //switch (frequency)
+            //{
+            //    case 1:
+            //        dateDiff = (completionDate - lastContributed).Days;
+            //        return dateDiff / 7;
+            //    case 2:
+            //        dateDiff = (completionDate - lastContributed).Days;
+            //        return dateDiff / 14;
+            //    case 3:
+            //        dateDiff = (completionDate.Month - lastContributed.Month);
+            //        return dateDiff;
+            //    case 4:
+            //        dateDiff = (completionDate.Month - lastContributed.Month);
+            //        return dateDiff / 2;
+            //    //to do
+            //    //case 5:
+            //    //    dateDiff = ()
+            //    default:
+            //        return 0;
+            //}
         }
 
         private DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency)
