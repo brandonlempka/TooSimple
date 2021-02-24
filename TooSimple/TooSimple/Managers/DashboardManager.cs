@@ -186,7 +186,6 @@ namespace TooSimple.Managers
                 Mask = x.mask,
                 Name = x.name,
                 LastUpdated = DateTime.Now,
-                UseForBudgeting = true,
                 Transactions = Enumerable.Empty<TransactionDM>()
             });
 

@@ -151,7 +151,7 @@ namespace TooSimple.DataAccessors
                             Name = account.Name,
                             AccountId = account.AccountId,
                             LastUpdated = DateTime.Now,
-                            UseForBudgeting = account.UseForBudgeting
+                            UseForBudgeting = true
                         });
 
                         await _db.SaveChangesAsync();
@@ -161,7 +161,6 @@ namespace TooSimple.DataAccessors
                         existingAccount.CurrentBalance = account.CurrentBalance;
                         existingAccount.AvailableBalance = account.AvailableBalance;
                         existingAccount.LastUpdated = DateTime.Now;
-                        existingAccount.UseForBudgeting = account.UseForBudgeting;
 
                         await _db.SaveChangesAsync();
                     }
