@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TooSimple.Managers;
 using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels.Plaid;
+using TooSimple.Models.ResponseModels;
 
 namespace TooSimple.Controllers
 {
@@ -30,14 +31,17 @@ namespace TooSimple.Controllers
         }
 
         [HttpPost]
-        public async Task PlaidLink([FromBody] PublicTokenRM dataModel)
+        public async Task<IActionResult> PlaidLink([FromBody] PublicTokenRM dataModel)
         {
             var currentUser = this.User;
+            var response = new StatusRM();
 
             if (!string.IsNullOrWhiteSpace(dataModel.public_token))
             {
-                var access_token = await _dashboardManager.PublicTokenExchangeAsync(dataModel, currentUser);
+                response = await _dashboardManager.PublicTokenExchangeAsync(dataModel, currentUser);
             }
+
+            return RedirectToAction("Index", response);
         }
 
         public async Task<IActionResult> LoadTransaction(string Id)

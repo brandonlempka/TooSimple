@@ -17,6 +17,7 @@ namespace TooSimple.Models.DataModels
         public decimal? AvailableBalance { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
+        public bool UseForBudgeting { get; set; }
         public DateTime? LastUpdated { get; set; }
         public IEnumerable<TransactionDM> Transactions { get; set; }
     }

@@ -52,6 +52,7 @@ namespace TooSimple.DataAccessors
                                        Name = x.Name,
                                        NickName = x.NickName,
                                        LastUpdated = x.LastUpdated,
+                                       UseForBudgeting = x.UseForBudgeting,
                                        Transactions = from tran in _db.Transactions
                                                       where tran.AccountId == accountId
                                                       select new TransactionDM
@@ -97,6 +98,7 @@ namespace TooSimple.DataAccessors
                     Name = x.Name,
                     NickName = x.NickName,
                     LastUpdated = x.LastUpdated,
+                    UseForBudgeting = x.UseForBudgeting,
                     Transactions = from tran in _db.Transactions
                                    where tran.UserAccountId == userId
                                    select new TransactionDM
@@ -137,22 +139,20 @@ namespace TooSimple.DataAccessors
 
                     if (existingAccount == null)
                     {
-                        foreach (var newAccount in dataModel)
+
+                        await _db.Accounts.AddAsync(new Account
                         {
-                            await _db.Accounts.AddAsync(new Account
-                            {
-                                AccessToken = newAccount.AccessToken,
-                                AvailableBalance = newAccount.AvailableBalance,
-                                UserAccountId = newAccount.UserAccountId,
-                                CurrencyCode = newAccount.CurrencyCode,
-                                CurrentBalance = newAccount.CurrentBalance,
-                                Mask = newAccount.Mask,
-                                Name = newAccount.Name,
-                                NickName = newAccount.NickName,
-                                AccountId = newAccount.AccountId,
-                                LastUpdated = DateTime.Now,
-                            });
-                        }
+                            AccessToken = account.AccessToken,
+                            AvailableBalance = account.AvailableBalance,
+                            UserAccountId = account.UserAccountId,
+                            CurrencyCode = account.CurrencyCode,
+                            CurrentBalance = account.CurrentBalance,
+                            Mask = account.Mask,
+                            Name = account.Name,
+                            AccountId = account.AccountId,
+                            LastUpdated = DateTime.Now,
+                            UseForBudgeting = account.UseForBudgeting
+                        });
 
                         await _db.SaveChangesAsync();
                     }
@@ -160,8 +160,8 @@ namespace TooSimple.DataAccessors
                     {
                         existingAccount.CurrentBalance = account.CurrentBalance;
                         existingAccount.AvailableBalance = account.AvailableBalance;
-                        existingAccount.NickName = account.NickName;
                         existingAccount.LastUpdated = DateTime.Now;
+                        existingAccount.UseForBudgeting = account.UseForBudgeting;
 
                         await _db.SaveChangesAsync();
                     }
@@ -313,6 +313,7 @@ namespace TooSimple.DataAccessors
                 var account = await _db.Accounts.FirstOrDefaultAsync(x => x.AccountId == actionModel.AccountId);
 
                 account.NickName = actionModel.NickName;
+                account.UseForBudgeting = actionModel.UseForBudgeting;
                 await _db.SaveChangesAsync();
                 return StatusRM.CreateSuccess("Index", "Successfully updated your account.");
             }

@@ -9,6 +9,7 @@ using TooSimple.Extensions;
 using Newtonsoft.Json;
 using TooSimple.Models.ResponseModels;
 using TooSimple.Models.RequestModels;
+using TooSimple.Models.DataModels.Plaid.TokenCreation;
 
 namespace TooSimple.DataAccessors
 {
@@ -17,8 +18,10 @@ namespace TooSimple.DataAccessors
         private AppSettings _appSettings;
         private string _language = "en";
         private string[] _countries = new string[] { "US" };
-        private string[] _products = new string[] { "auth", "transactions" };
+        private string[] _products = new string[] { "auth", "transactions", };
         private string _clientName = "Too Simple";
+        private string[] _debit_account_filters = new string[] { "checking", "savings", "hsa" };
+        private string[] _credit_account_filters = new string[] { "credit card" };
 
         public PlaidDataAccessor(IOptions<AppSettings> appSettings)
         {
@@ -36,9 +39,21 @@ namespace TooSimple.DataAccessors
                 language = _language,
                 products = _products,
 
-                user = new CreateLinkTokenUserDM
+                user = new UserDM
                 {
                     client_user_id = userId
+                },
+
+                account_filters = new AccountFiltersDM
+                {
+                    depository = new DepositoryDM
+                    {
+                        account_subtypes = _debit_account_filters
+                    },
+                    credit = new CreditDM
+                    {
+                        account_subtypes = _credit_account_filters
+                    }
                 }
             };
 

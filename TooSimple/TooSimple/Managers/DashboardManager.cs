@@ -35,7 +35,10 @@ namespace TooSimple.Managers
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
-            var accountNeedsUpdating = true;
+            var includedAccounts = new AccountListDM
+            {
+                Accounts = dataModel.Accounts.Where(a => a.UseForBudgeting)
+            };
 
             if (!dataModel.Accounts.Any())
             {
@@ -47,9 +50,6 @@ namespace TooSimple.Managers
                 return emptyViewModel;
             }
 
-            var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
-                x => x.AccountId,
-                (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
 
             var responseList = new List<StatusRM>();
 
@@ -57,21 +57,25 @@ namespace TooSimple.Managers
 
             if (outdatedAccounts.Any())
             {
+                var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
+                    x => x.AccountId,
+                    (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
+
+                var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated)?.ToString("yyyy-MM-dd");
+
                 foreach (var token in accountGroup)
                 {
                     var ids = token.AccountIds.ToArray();
-
-                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids);
+                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdated);
                     responseList.Add(newResponse);
                 }
             }
 
-            dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
 
             var transactionList = new List<TransactionListVM>();
 
-            foreach (var account in dataModel.Accounts)
+            foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
             {
                 var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
                 {
@@ -104,7 +108,7 @@ namespace TooSimple.Managers
 
             if (goals.Goals.Any())
             {
-                await UpdateGoalFunding(userId);
+                await UpdateGoalFunding(userId, DateTime.Now);
             }
 
             foreach (var tran in transactionList)
@@ -120,7 +124,7 @@ namespace TooSimple.Managers
                 }
             }
 
-            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(dataModel, userId);
+            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
             var viewModel = new DashboardVM
             {
                 CurrentBalance = currentBalance,
@@ -153,12 +157,13 @@ namespace TooSimple.Managers
                 return StatusRM.CreateError(genericError);
             }
 
-            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds);
+            var defaultTransactionsStart = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd");
+            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds, defaultTransactionsStart);
 
             return refreshResponse;
         }
 
-        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken, string[] accountIds)
+        private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken, string[] accountIds, string lastUpdated)
         {
             var genericError = "Something went wrong while contacting Plaid.";
             var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken, accountIds);
@@ -180,7 +185,9 @@ namespace TooSimple.Managers
                 CurrencyCode = x.balances.iso_currency_code,
                 Mask = x.mask,
                 Name = x.name,
-                LastUpdated = DateTime.Now
+                LastUpdated = DateTime.Now,
+                UseForBudgeting = true,
+                Transactions = Enumerable.Empty<TransactionDM>()
             });
 
             var accountAddResponse = await _accountDataAccessor.SavePlaidAccountData(plaidAccount);
@@ -193,7 +200,7 @@ namespace TooSimple.Managers
             var transactionsRequest = new PlaidTransactionRequestModel
             {
                 AccessToken = accessToken,
-                StartDate = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd"),
+                StartDate = lastUpdated,
                 AccountIds = accountIds
             };
 
@@ -284,7 +291,39 @@ namespace TooSimple.Managers
             return new DashboardEditAccountVM
             {
                 AccountId = account.AccountId,
-                NickName = account.NickName ?? account.Name
+                NickName = account.NickName ?? account.Name,
+                AccountTypeId = account.AccountTypeId,
+                AvailableBalance = account.AvailableBalance,
+                CurrentBalance = account.CurrentBalance,
+                CurrencyCode = account.CurrencyCode,
+                LastUpdated = account.LastUpdated?.ToString("MM/dd/yyyy hh:mm"),
+                Mask = account.Mask,
+                Name = account.Name,
+                UseForBudgeting = account.UseForBudgeting,
+                Transactions = account.Transactions.EmptyIfNull().Select(t => new TransactionListVM
+                {
+                    AccountId = t.AccountId,
+                    AccountName = account.NickName ?? account.Name,
+                    AccountOwner = t.AccountOwner,
+                    Address = t.Address,
+                    Amount = t.Amount,
+                    AmountDisplayValue = t.Amount?.ToString("c") ?? "$0.00",
+                    City = t.City,
+                    Country = t.Country,
+                    CurrencyCode = t.CurrencyCode,
+                    InternalCategory = t.InternalCategory,
+                    MerchantName = t.MerchantName,
+                    Name = t.Name,
+                    PaymentMethod = t.PaymentMethod,
+                    Pending = t.Pending,
+                    PostalCode = t.PostalCode,
+                    Region = t.Region,
+                    SpendingFrom = t.SpendingFrom,
+                    TransactionCode = t.TransactionCode,
+                    TransactionDate = t.TransactionDate,
+                    TransactionDateDisplayValue = t.TransactionDate?.ToString("MM/dd/yyyy"),
+                    TransactionId = t.TransactionId,
+                })
             };
         }
 
@@ -639,10 +678,10 @@ namespace TooSimple.Managers
             return await _budgetingDataAccessor.SaveMoveMoneyAsync(actionModel);
         }
 
-        public async Task UpdateGoalFunding(string userId)
+        public async Task UpdateGoalFunding(string userId, DateTime todayDateTime)
         {
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-            var today = DateTime.Now.Date;
+            var today = todayDateTime.Date;
             var schedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(userId);
 
             //Goal calculation
@@ -660,7 +699,7 @@ namespace TooSimple.Managers
                                 .OrderByDescending(g => g.TransferDate)
                                 .ToList();
 
-                            var lastFunded = DateTime.Now;
+                            var lastFunded = todayDateTime;
                             if (goalHistory.Any())
                             {
                                 lastFunded = goalHistory.Max(g => g.TransferDate);
@@ -670,7 +709,7 @@ namespace TooSimple.Managers
                                 lastFunded = goal.CreationDate;
                             }
 
-                            var nextContribution = DateTime.Now;
+                            var nextContribution = todayDateTime;
 
                             nextContribution = CalculateNextGoalContributionDate(lastFunded, schedule.FirstContributionDate, schedule.Frequency);
 
@@ -678,62 +717,13 @@ namespace TooSimple.Managers
                             {
                                 int contributionsRemaining = 0;
 
+                                var nextExpenseDate = goal.DesiredCompletionDate;
+
                                 if (!goal.ExpenseFlag || goal.DesiredCompletionDate > today)
                                     contributionsRemaining = CalculateContributionsToComplete(goal.DesiredCompletionDate, lastFunded, schedule.Frequency);
                                 else
                                 {
-                                    var nextExpenseDate = goal.DesiredCompletionDate;
-
-                                    if (goal.RecurrenceTimeFrame == 1)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddDays(7);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 2)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddDays(14);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 3)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddMonths(1);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 4)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddMonths(2);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 5)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddMonths(3);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 6)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddMonths(6);
-                                        }
-                                    }
-                                    else if (goal.RecurrenceTimeFrame == 7)
-                                    {
-                                        while (today >= nextExpenseDate)
-                                        {
-                                            nextExpenseDate = nextExpenseDate.AddYears(1);
-                                        }
-                                    }
-
+                                    nextExpenseDate = CalculateNextExpenseContributionDate(today, nextExpenseDate, goal.RecurrenceTimeFrame ?? 0);
                                     contributionsRemaining = CalculateContributionsToComplete(nextExpenseDate, lastFunded, schedule.Frequency);
                                 }
 
@@ -767,7 +757,7 @@ namespace TooSimple.Managers
             }
         }
 
-        private int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency)
+        public int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency)
         {
             var nextContribution = lastContributed;
             var numberOfContributionsRemaining = 0;
@@ -833,7 +823,7 @@ namespace TooSimple.Managers
             //}
         }
 
-        private DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency)
+        public DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency)
         {
             DateTime nextContribution;
 
@@ -872,6 +862,60 @@ namespace TooSimple.Managers
 
             return scheduleFirstDate;
         }
+
+        public DateTime CalculateNextExpenseContributionDate(DateTime today, DateTime nextExpenseDate, int recurrence)
+        {
+            if (recurrence == 1)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddDays(7);
+                }
+            }
+            else if (recurrence == 2)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddDays(14);
+                }
+            }
+            else if (recurrence == 3)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddMonths(1);
+                }
+            }
+            else if (recurrence == 4)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddMonths(2);
+                }
+            }
+            else if (recurrence == 5)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddMonths(3);
+                }
+            }
+            else if (recurrence == 6)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddMonths(6);
+                }
+            }
+            else if (recurrence == 7)
+            {
+                while (today >= nextExpenseDate)
+                {
+                    nextExpenseDate = nextExpenseDate.AddYears(1);
+                }
+            }
+
+            return nextExpenseDate;
+        }
     }
 }
-

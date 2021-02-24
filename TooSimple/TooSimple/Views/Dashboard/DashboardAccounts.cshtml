@@ -33,45 +33,32 @@
 
 
 
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 
+<script type="text/javascript">
+const handler = Plaid.create({
+    token: '@Model.LinkToken',
+    onSuccess: (public_token, metadata) => {
+        fetch('/Dashboard/PlaidLink', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                public_token: public_token,
+                accounts: metadata.accounts,
+                institution: metadata.institution,
+                link_session_id: metadata.link_session_id
+            }),
+        });
+    },
+    onLoad: () => { },
+    onExit: (err, metadata) => { },
+    onEvent: (eventName, metadata) => { },
+    receivedRedirectUri: null,
+});
 
-
-
-
-
-
-
-
-
-
-
-
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-
-    <script type="text/javascript">
-    const handler = Plaid.create({
-        token: '@Model.LinkToken',
-        onSuccess: (public_token, metadata) => {
-            fetch('/Dashboard/PlaidLink', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    public_token: public_token,
-                    accounts: metadata.accounts,
-                    institution: metadata.institution,
-                    link_session_id: metadata.link_session_id
-                }),
-            });
-        },
-        onLoad: () => { },
-        onExit: (err, metadata) => { },
-        onEvent: (eventName, metadata) => { },
-        receivedRedirectUri: null,
-    });
-
-    function startLink() {
-        handler.open();
-    }
-    </script>
+function startLink() {
+    handler.open();
+}
+</script>

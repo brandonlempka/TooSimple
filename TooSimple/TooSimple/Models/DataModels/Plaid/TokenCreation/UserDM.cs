@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TooSimple.Models.DataModels.Plaid
 {
-    public class CreateLinkTokenUserDM
+    public class UserDM
     {
         public string client_user_id { get; set; }
     }

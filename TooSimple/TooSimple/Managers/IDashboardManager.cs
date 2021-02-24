@@ -31,5 +31,8 @@ namespace TooSimple.Managers
         Task<StatusRM> DeleteFundingScheduleAsync(string scheduleId);
         Task<DashboardMoveMoneyVM> GetMoveMoneyVMAsync(ClaimsPrincipal currentUser);
         Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel);
+        Task UpdateGoalFunding(string userId, DateTime todayDateTime);
+        int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency);
+        DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency);
     }
 }

@@ -9,5 +9,6 @@ namespace TooSimple.Models.ActionModels
     {
         public string AccountId { get; set; }
         public string NickName { get; set; }
+        public bool UseForBudgeting { get; set; }
     }
 }
