@@ -79,6 +79,8 @@ namespace TooSimple
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
                 options.SlidingExpiration = true;
             });
+
+            services.AddProgressiveWebApp();
         }
     
 
