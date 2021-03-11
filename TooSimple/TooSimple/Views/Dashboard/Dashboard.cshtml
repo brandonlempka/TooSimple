@@ -7,7 +7,7 @@
 }
 else
 {
-    <h2 class="mb-4">Available Balance: $@Model.CurrentBalance</h2>
+    <h2 class="mb-4">Available Balance: @Model.AmountDisplayValue</h2>
     @if (!string.IsNullOrWhiteSpace(Model.LastUpdated))
     {
         <p>Last updated @Model.LastUpdated</p>

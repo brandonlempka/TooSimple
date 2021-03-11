@@ -18,5 +18,7 @@ namespace TooSimple.Models.ViewModels
         public bool ExpenseFlag { get; set; }
         public int? RecurrenceTimeFrame { get; set; }
         public string ProgressPercent { get; set; }
+        public string NextContributionAmount { get; set; }
+        public string NextContributionDate { get; set; }
     }
 }

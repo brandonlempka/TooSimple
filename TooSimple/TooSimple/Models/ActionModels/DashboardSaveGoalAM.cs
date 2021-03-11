@@ -11,6 +11,7 @@ namespace TooSimple.Models.ActionModels
         public string UserAccountId { get; set; }
         public string GoalName { get; set; }
         public decimal GoalAmount { get; set; }
+        public bool AutoRefill { get; set; }
         public DateTime DesiredCompletionDate { get; set; }
         public string AutoSpendMerchantName { get; set; }
         public bool Paused { get; set; }
@@ -22,6 +23,7 @@ namespace TooSimple.Models.ActionModels
         public DashboardSaveGoalAM()
         {
             CreationDate = DateTime.Now;
+            AutoRefill = true;
         }
     }
 }

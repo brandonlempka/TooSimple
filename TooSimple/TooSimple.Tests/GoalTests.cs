@@ -15,12 +15,80 @@ namespace TooSimple.Tests
     public class GoalTests
     {
         [TestMethod]
+        public void TestNewGoalContributionsScheduleOne()
+        {
+            //Arrange
+            var testSchedule = 1;
+            var todayDate = Convert.ToDateTime("2021-02-01 08:00:00");
+            var goal = new GoalDM
+            {
+                AmountContributed = 100,
+                AmountSpent = 50,
+                AutoRefill = false,
+                GoalAmount = 1000,
+                UserAccountId = "123",
+                CreationDate = Convert.ToDateTime("2021-01-01 08:00:00"),
+                DesiredCompletionDate = Convert.ToDateTime("2021-03-01 08:00:00"),
+                ExpenseFlag = false,
+                Paused = false,
+                GoalName = "Test Goal Schedule 1",
+                GoalId = "123",
+                FundingScheduleId = "1234"
+            };
+
+            var fundingSchedule = new FundingScheduleDM
+            {
+                UserAccountId = "123",
+                FirstContributionDate = Convert.ToDateTime("2020-01-01 08:00:00"),
+                Frequency = testSchedule,
+                FundingScheduleId = "1234",
+                FundingScheduleName = "Test Schedule 1"
+            };
+
+            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+
+            //Act
+            var nextContribution = dashboardManager.CalculateNextContribution(goal, fundingSchedule, todayDate);
+
+            //Assert
+            Assert.AreEqual(225.00M, nextContribution.NextContributionAmount);
+            Assert.AreEqual(Convert.ToDateTime("2021-02-03 00:00:00"), nextContribution.NextContributionDate);
+        }
+
+        [TestMethod]
         public void TestGoalContributionsScheduleOne()
         {
             //Arrange
             var testSchedule = 1;
-            var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
-            var completionDate = initialContribution.AddDays(60);
+            var todayDate = Convert.ToDateTime("2021-02-01 08:00:00");
+            var goal = new GoalDM
+            {
+                AmountContributed = 100,
+                AmountSpent = 50,
+                AutoRefill = false,
+                GoalAmount = 1000,
+                UserAccountId = "123",
+                CreationDate = Convert.ToDateTime("2021-01-01 08:00:00"),
+                DesiredCompletionDate = Convert.ToDateTime("2021-03-01 08:00:00"),
+                ExpenseFlag = false,
+                Paused = false,
+                GoalName = "Test Goal Schedule 1",
+                GoalId = "123",
+                FundingScheduleId = "1234",
+                NextContributionDate = Convert.ToDateTime("2021-01-27 13:53:23")
+            };
+
+            var fundingSchedule = new FundingScheduleDM
+            {
+                UserAccountId = "123",
+                FirstContributionDate = Convert.ToDateTime("2020-01-01 08:00:00"),
+                Frequency = testSchedule,
+                FundingScheduleId = "1234",
+                FundingScheduleName = "Test Schedule 1"
+            };
 
             var mockAccountAccessor = new Mock<IAccountDataAccessor>();
             var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
@@ -28,151 +96,174 @@ namespace TooSimple.Tests
             var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
             //Act
-            var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
+            var nextContribution = dashboardManager.CalculateNextContribution(goal, fundingSchedule, todayDate);
 
             //Assert
-            Assert.AreEqual(9, numberOfContributions);
+            Assert.AreEqual(225.00M, nextContribution.NextContributionAmount);
+            Assert.AreEqual(Convert.ToDateTime("2021-02-03 00:00:00"), nextContribution.NextContributionDate);
         }
 
-        [TestMethod]
-        public void TestGoalContributionsScheduleTwo()
-        {
-            //Arrange
-            var testSchedule = 2;
-            var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
-            var completionDate = initialContribution.AddDays(60);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-            //Act
-            var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
+        //[TestMethod]
+        //public void TestGoalContributionsScheduleOne()
+        //{
+        //    //Arrange
+        //    var testSchedule = 1;
+        //    var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var completionDate = initialContribution.AddDays(60);
 
-            //Assert
-            Assert.AreEqual(5, numberOfContributions);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalContributionsScheduleThree()
-        {
-            //Arrange
-            var testSchedule = 3;
-            var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
-            var completionDate = initialContribution.AddDays(120);
+        //    //Act
+        //    var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(9, numberOfContributions);
+        //}
 
-            //Act
-            var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
+        //[TestMethod]
+        //public void TestGoalContributionsScheduleTwo()
+        //{
+        //    //Arrange
+        //    var testSchedule = 2;
+        //    var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var completionDate = initialContribution.AddDays(60);
 
-            //Assert
-            Assert.AreEqual(4, numberOfContributions);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalContributionsScheduleFour()
-        {
-            //Arrange
-            var testSchedule = 4;
-            var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
-            var completionDate = initialContribution.AddDays(120);
+        //    //Act
+        //    var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(5, numberOfContributions);
+        //}
 
-            //Act
-            var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
+        //[TestMethod]
+        //public void TestGoalContributionsScheduleThree()
+        //{
+        //    //Arrange
+        //    var testSchedule = 3;
+        //    var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var completionDate = initialContribution.AddDays(120);
 
-            //Assert
-            Assert.AreEqual(2, numberOfContributions);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalNextContributionDateOne()
-        {
-            //Arrange
-            var testSchedule = 1;
-            var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
-            var scheduleDate = lastFunded.AddDays(-63);
+        //    //Act
+        //    var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(4, numberOfContributions);
+        //}
 
-            //Act
-            var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+        //[TestMethod]
+        //public void TestGoalContributionsScheduleFour()
+        //{
+        //    //Arrange
+        //    var testSchedule = 4;
+        //    var initialContribution = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var completionDate = initialContribution.AddDays(120);
 
-            //Assert
-            Assert.AreEqual(Convert.ToDateTime("2021-01-08, 00:00:00"), nextContribution);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalNextContributionDateTwo()
-        {
-            //Arrange
-            var testSchedule = 2;
-            var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
-            var scheduleDate = lastFunded.AddDays(-70);
+        //    //Act
+        //    var numberOfContributions = dashboardManager.CalculateContributionsToComplete(completionDate, initialContribution, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(2, numberOfContributions);
+        //}
 
-            //Act
-            var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+        //[TestMethod]
+        //public void TestGoalNextContributionDateOne()
+        //{
+        //    //Arrange
+        //    var testSchedule = 1;
+        //    var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var scheduleDate = lastFunded.AddDays(-63);
 
-            //Assert
-            Assert.AreEqual(Convert.ToDateTime("2021-01-15, 00:00:00"), nextContribution);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalNextContributionDateThree()
-        {
-            //Arrange
-            var testSchedule = 3;
-            var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
-            var scheduleDate = lastFunded.AddDays(-92);
+        //    //Act
+        //    var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(Convert.ToDateTime("2021-01-08, 00:00:00"), nextContribution);
+        //}
 
-            //Act
-            var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+        //[TestMethod]
+        //public void TestGoalNextContributionDateTwo()
+        //{
+        //    //Arrange
+        //    var testSchedule = 2;
+        //    var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var scheduleDate = lastFunded.AddDays(-70);
 
-            //Assert
-            Assert.AreEqual(Convert.ToDateTime("2021-02-01, 00:00:00"), nextContribution);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
 
-        [TestMethod]
-        public void TestGoalNextContributionDateFour()
-        {
-            //Arrange
-            var testSchedule = 4;
-            var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
-            var scheduleDate = lastFunded.AddDays(-122);
+        //    //Act
+        //    var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
 
-            var mockAccountAccessor = new Mock<IAccountDataAccessor>();
-            var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
-            var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
-            var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+        //    //Assert
+        //    Assert.AreEqual(Convert.ToDateTime("2021-01-15, 00:00:00"), nextContribution);
+        //}
 
-            //Act
-            var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+        //[TestMethod]
+        //public void TestGoalNextContributionDateThree()
+        //{
+        //    //Arrange
+        //    var testSchedule = 3;
+        //    var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var scheduleDate = lastFunded.AddDays(-92);
 
-            //Assert
-            Assert.AreEqual(Convert.ToDateTime("2021-03-01, 00:00:00"), nextContribution);
-        }
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+
+        //    //Act
+        //    var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+
+        //    //Assert
+        //    Assert.AreEqual(Convert.ToDateTime("2021-02-01, 00:00:00"), nextContribution);
+        //}
+
+        //[TestMethod]
+        //public void TestGoalNextContributionDateFour()
+        //{
+        //    //Arrange
+        //    var testSchedule = 4;
+        //    var lastFunded = Convert.ToDateTime("2021-01-01 08:00:00");
+        //    var scheduleDate = lastFunded.AddDays(-122);
+
+        //    var mockAccountAccessor = new Mock<IAccountDataAccessor>();
+        //    var mockBudgetAccessor = new Mock<IBudgetingDataAccessor>();
+        //    var mockPlaidAccessor = new Mock<IPlaidDataAccessor>();
+        //    var dashboardManager = new DashboardManager(mockAccountAccessor.Object, mockPlaidAccessor.Object, mockBudgetAccessor.Object);
+
+        //    //Act
+        //    var nextContribution = dashboardManager.CalculateNextGoalContributionDate(lastFunded, scheduleDate, testSchedule);
+
+        //    //Assert
+        //    Assert.AreEqual(Convert.ToDateTime("2021-03-01, 00:00:00"), nextContribution);
+        //}
 
 
         //[TestMethod]

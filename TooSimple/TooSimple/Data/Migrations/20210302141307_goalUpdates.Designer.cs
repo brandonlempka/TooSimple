@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TooSimple.Data;
 
 namespace TooSimple.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210302141307_goalUpdates")]
+    partial class goalUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -349,12 +351,6 @@ namespace TooSimple.Data.Migrations
 
                     b.Property<string>("GoalName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("NextContributionAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("NextContributionDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Paused")
                         .HasColumnType("bit");

@@ -417,7 +417,7 @@ namespace TooSimple.DataAccessors
             };
         }
 
-        public async Task<StatusRM> SaveTransactionAsync(DashboardEditTransactionAM actionModel)
+        public async Task<SaveTransactionRM> SaveTransactionAsync(DashboardEditTransactionAM actionModel)
         {
             try
             {
@@ -428,11 +428,25 @@ namespace TooSimple.DataAccessors
 
                 await _db.SaveChangesAsync();
 
-                return StatusRM.CreateSuccess(null, "Success");
+                return new SaveTransactionRM
+                {
+                    AccountId = existingTran.AccountId,
+                    Amount = existingTran.Amount,
+                    UserAccountId = existingTran.UserAccountId,
+                    ErrorMessage = existingTran.ErrorMessage,
+                    InternalCategory = existingTran.InternalCategory,
+                    ReferenceNumber = existingTran.ReferenceNumber,
+                    SpendingFrom = existingTran.SpendingFrom,
+                    TransactionDate = existingTran.TransactionDate,
+                    TransactionId = existingTran.TransactionId
+                };
             }
             catch (Exception ex)
             {
-                return StatusRM.CreateError(ex);
+                return new SaveTransactionRM
+                {
+                    ErrorMessage = ex.ToString()
+                };
             }
         }
     }

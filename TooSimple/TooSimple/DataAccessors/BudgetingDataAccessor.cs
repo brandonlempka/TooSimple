@@ -8,6 +8,7 @@ using TooSimple.Extensions;
 using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels;
 using TooSimple.Models.EFModels;
+using TooSimple.Models.RequestModels;
 using TooSimple.Models.ResponseModels;
 
 namespace TooSimple.DataAccessors
@@ -31,7 +32,7 @@ namespace TooSimple.DataAccessors
                         {
                             GoalAmount = goal.GoalAmount,
                             UserAccountId = goal.UserAccountId,
-                            CurrentBalance = goal.CurrentBalance,
+                            AmountContributed = goal.AmountContributed,
                             DesiredCompletionDate = goal.DesiredCompletionDate,
                             GoalId = goal.GoalId,
                             GoalName = goal.GoalName,
@@ -41,6 +42,10 @@ namespace TooSimple.DataAccessors
                             CreationDate = goal.CreationDate,
                             Paused = goal.Paused,                
                             AutoSpendMerchantName = goal.AutoSpendMerchantName,
+                            AmountSpent = goal.AmountSpent,
+                            AutoRefill = goal.AutoRefill,
+                            NextContributionAmount = goal.NextContributionAmount,
+                            NextContributionDate = goal.NextContributionDate
                         }
             };
 
@@ -54,7 +59,7 @@ namespace TooSimple.DataAccessors
             return new GoalDM
             {
                 GoalAmount = data.GoalAmount,
-                CurrentBalance = data.CurrentBalance,
+                AmountContributed = data.AmountContributed,
                 DesiredCompletionDate = data.DesiredCompletionDate,
                 GoalId = data.GoalId,
                 GoalName = data.GoalName,
@@ -65,28 +70,35 @@ namespace TooSimple.DataAccessors
                 CreationDate = data.CreationDate,
                 Paused = data.Paused,
                 AutoSpendMerchantName = data.AutoSpendMerchantName,
+                AmountSpent = data.AmountSpent,
+                AutoRefill = data.AutoRefill,
+                NextContributionAmount = data.NextContributionAmount,
+                NextContributionDate = data.NextContributionDate
             };
         }
 
-        public async Task<StatusRM> SaveGoalAsync(DashboardSaveGoalAM actionModel)
+        public async Task<StatusRM> SaveGoalAsync(GoalDM dataModel)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(actionModel.GoalId))
+                if (string.IsNullOrWhiteSpace(dataModel.GoalId))
                 {
                     await _db.Goals.AddAsync(new Goal
                     {
-                        GoalAmount = actionModel.GoalAmount,
-                        CurrentBalance = 0,
-                        DesiredCompletionDate = actionModel.DesiredCompletionDate,
-                        GoalName = actionModel.GoalName,
-                        UserAccountId = actionModel.UserAccountId,
-                        FundingScheduleId = actionModel.FundingScheduleId,
-                        ExpenseFlag = actionModel.ExpenseFlag,
-                        RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame,
-                        CreationDate = actionModel.CreationDate,
-                        Paused = actionModel.Paused,
-                        AutoSpendMerchantName = actionModel.AutoSpendMerchantName,
+                        GoalAmount = dataModel.GoalAmount,
+                        AmountContributed = 0,
+                        DesiredCompletionDate = dataModel.DesiredCompletionDate,
+                        GoalName = dataModel.GoalName,
+                        UserAccountId = dataModel.UserAccountId,
+                        FundingScheduleId = dataModel.FundingScheduleId,
+                        ExpenseFlag = dataModel.ExpenseFlag,
+                        RecurrenceTimeFrame = dataModel.RecurrenceTimeFrame,
+                        CreationDate = dataModel.CreationDate,
+                        Paused = dataModel.Paused,
+                        AutoSpendMerchantName = dataModel.AutoSpendMerchantName,
+                        AutoRefill = dataModel.AutoRefill,
+                        NextContributionAmount = dataModel.NextContributionAmount,
+                        NextContributionDate = dataModel.NextContributionDate
                     });
 
                     await _db.SaveChangesAsync();
@@ -94,16 +106,19 @@ namespace TooSimple.DataAccessors
                     return StatusRM.CreateSuccess(null, "Success");
                 }
 
-                var existingGoal = await _db.Goals.FirstOrDefaultAsync(x => x.GoalId == actionModel.GoalId);
+                var existingGoal = await _db.Goals.FirstOrDefaultAsync(x => x.GoalId == dataModel.GoalId);
 
-                existingGoal.GoalName = actionModel.GoalName;
-                existingGoal.GoalAmount = actionModel.GoalAmount;
-                existingGoal.DesiredCompletionDate = actionModel.DesiredCompletionDate;
-                existingGoal.FundingScheduleId = actionModel.FundingScheduleId;
-                existingGoal.RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame;
-                existingGoal.ExpenseFlag = actionModel.ExpenseFlag;
-                existingGoal.Paused = actionModel.Paused;
-                existingGoal.AutoSpendMerchantName = actionModel.AutoSpendMerchantName;
+                existingGoal.GoalName = dataModel.GoalName;
+                existingGoal.GoalAmount = dataModel.GoalAmount;
+                existingGoal.DesiredCompletionDate = dataModel.DesiredCompletionDate;
+                existingGoal.FundingScheduleId = dataModel.FundingScheduleId;
+                existingGoal.RecurrenceTimeFrame = dataModel.RecurrenceTimeFrame;
+                existingGoal.ExpenseFlag = dataModel.ExpenseFlag;
+                existingGoal.Paused = dataModel.Paused;
+                existingGoal.AutoSpendMerchantName = dataModel.AutoSpendMerchantName;
+                existingGoal.AutoRefill = dataModel.AutoRefill;
+                existingGoal.NextContributionDate = dataModel.NextContributionDate;
+                existingGoal.NextContributionAmount = dataModel.NextContributionAmount;
 
                 await _db.SaveChangesAsync();
 
@@ -215,41 +230,93 @@ namespace TooSimple.DataAccessors
             }
         }
 
-        public async Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel)
+        public async Task<StatusRM> SaveMoveMoneyAsync(MoveMoneyRequestModel requestModel)
         {
             try
             {
-                if (actionModel.FromAccountId == "0")
+                if (requestModel.FromAccountId == "0")
                 {
-                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.ToAccountId);
-                    existingGoal.CurrentBalance += actionModel.Amount;
+                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.ToAccountId);
+                    existingGoal.AmountContributed += requestModel.Amount;
                     await _db.SaveChangesAsync();
                 }
-                else if (actionModel.ToAccountId == "0")
+                else if (requestModel.ToAccountId == "0")
                 {
-                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.FromAccountId);
-                    existingGoal.CurrentBalance -= actionModel.Amount;
-                    await _db.SaveChangesAsync();
+                    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.FromAccountId);
+                    if (requestModel.AutoRefill)
+                    {
+                        existingGoal.AmountContributed -= requestModel.Amount;
+                        await _db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        existingGoal.AmountSpent += requestModel.Amount;
+                        await _db.SaveChangesAsync();
+                    }
                 }
                 else
                 {
-                    var fromGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.FromAccountId);
-                    var toGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == actionModel.ToAccountId);
+                    var fromGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.FromAccountId);
+                    var toGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.ToAccountId);
 
-                    fromGoal.CurrentBalance -= actionModel.Amount;
-                    toGoal.CurrentBalance += actionModel.Amount;
+                    if (requestModel.AutoRefill)
+                    {
+                        fromGoal.AmountContributed -= requestModel.Amount;
+                    }
+                    else
+                    {
+                        fromGoal.AmountSpent += requestModel.Amount;
+                    }
+
+                    toGoal.AmountContributed += requestModel.Amount;
                     await _db.SaveChangesAsync();
                 }
+
+
+
+
+
+
+                //if (requestModel.FromAccountId == "0" && requestModel.AutoRefill)
+                //{
+                //    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.ToAccountId);
+                //    existingGoal.AmountContributed += requestModel.Amount;
+                //    await _db.SaveChangesAsync();
+                //}
+                //else if (requestModel.FromAccountId != "0" && !requestModel.AutoRefill)
+                //{
+                //    var fromGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.FromAccountId);
+                //    var toGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.ToAccountId);
+
+                //    fromGoal.AmountSpent += requestModel.Amount;
+                //    toGoal.AmountContributed += requestModel.Amount;
+                //    await _db.SaveChangesAsync();
+                //}
+                //else if (requestModel.ToAccountId == "0" && requestModel.AutoRefill)
+                //{
+                //    var existingGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.FromAccountId);
+                //    existingGoal.AmountContributed =- requestModel.Amount;
+                //    await _db.SaveChangesAsync();
+                //}
+                //else
+                //{
+                //    var fromGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.FromAccountId);
+                //    var toGoal = await _db.Goals.FirstOrDefaultAsync(goal => goal.GoalId == requestModel.ToAccountId);
+
+                //    fromGoal.AmountContributed -= requestModel.Amount;
+                //    toGoal.AmountContributed += requestModel.Amount;
+                //    await _db.SaveChangesAsync();
+                //}
 
 
                 var historyEntry = new FundingHistory
                 {
-                    Amount = actionModel.Amount,
-                    FromAccountId = actionModel.FromAccountId,
-                    ToAccountId = actionModel.ToAccountId,
-                    Note = actionModel.Note,
-                    TransferDate = actionModel.TransferDate,
-                    AutomatedTransfer = actionModel.AutomatedTransfer,
+                    Amount = requestModel.Amount,
+                    FromAccountId = requestModel.FromAccountId,
+                    ToAccountId = requestModel.ToAccountId,
+                    Note = requestModel.Note,
+                    TransferDate = requestModel.TransferDate,
+                    AutomatedTransfer = requestModel.AutomatedTransfer,
                 };
 
                 await _db.FundingHistories.AddAsync(historyEntry);
@@ -268,18 +335,9 @@ namespace TooSimple.DataAccessors
 
             var goalDM = await GetGoalListDMAsync(userAccountId);
             var accountSum = accountsDM.Accounts.EmptyIfNull().Select(x => x.CurrentBalance).Sum();
-            var goalsSum = goalDM.Goals.Select(x => x.CurrentBalance).Sum();
-            decimal transactionsSum = 0;
-
-            foreach (var account in accountsDM.Accounts)
-            {
-                transactionsSum += account.Transactions.Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom))
-                    .Select(x => x.Amount ?? 0).Sum();
-            }
+            var goalsSum = goalDM.Goals.EmptyIfNull().Select(x => x.AmountContributed).Sum();
 
             accountSum -= goalsSum;
-            accountSum += transactionsSum;
-
             return accountSum;
         }
 

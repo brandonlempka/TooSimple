@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TooSimple.Models.ActionModels;
+using TooSimple.Models.DataModels;
 using TooSimple.Models.DataModels.Plaid;
 using TooSimple.Models.ResponseModels;
 using TooSimple.Models.ResponseModels.Plaid;
@@ -30,9 +31,8 @@ namespace TooSimple.Managers
         Task<StatusRM> UpdateFundingScheduleAsync(DashboardSaveFundingScheduleAM actionModel);
         Task<StatusRM> DeleteFundingScheduleAsync(string scheduleId);
         Task<DashboardMoveMoneyVM> GetMoveMoneyVMAsync(ClaimsPrincipal currentUser);
-        Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel);
+        Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel, bool autoRefill = true);
         Task UpdateGoalFunding(string userId, DateTime todayDateTime);
-        int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency);
-        DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency);
+        ContributionDM CalculateNextContribution(GoalDM goal, FundingScheduleDM schedule, DateTime todayDate);
     }
 }

@@ -31,138 +31,6 @@ namespace TooSimple.Managers
             _budgetingDataAccessor = budgetingDataAccessor;
         }
 
-        public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
-        {
-            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
-            var includedAccounts = new AccountListDM
-            {
-                Accounts = dataModel.Accounts.Where(a => a.UseForBudgeting)
-            };
-
-            if (!dataModel.Accounts.Any())
-            {
-                var emptyViewModel = new DashboardVM
-                {
-                    Transactions = Enumerable.Empty<TransactionListVM>()
-                };
-
-                return emptyViewModel;
-            }
-
-
-            var responseList = new List<StatusRM>();
-
-            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15));
-
-            if (outdatedAccounts.Any())
-            {
-                var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
-                    x => x.AccountId,
-                    (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
-
-                var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated)?.ToString("yyyy-MM-dd");
-
-                foreach (var token in accountGroup)
-                {
-                    var ids = token.AccountIds.ToArray();
-                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdated);
-                    responseList.Add(newResponse);
-                }
-            }
-
-            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-
-            var transactionList = new List<TransactionListVM>();
-
-            foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
-            {
-                var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
-                {
-                    AccountId = x.AccountId,
-                    AccountName = account.Name,
-                    AccountOwner = x.AccountOwner,
-                    Address = x.Address,
-                    Amount = x.Amount,
-                    AmountDisplayValue = x.Amount?.ToString("c") ?? "$0.00",
-                    City = x.City,
-                    Country = x.Country,
-                    CurrencyCode = x.CurrencyCode,
-                    InternalCategory = x.InternalCategory,
-                    MerchantName = x.MerchantName,
-                    Name = x.Name,
-                    PaymentMethod = x.PaymentMethod,
-                    Pending = x.Pending,
-                    PostalCode = x.PostalCode,
-                    Region = x.Region,
-                    SpendingFrom = x.SpendingFrom,
-                    TransactionCode = x.TransactionCode,
-                    TransactionDate = x.TransactionDate,
-                    TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy"),
-                    TransactionId = x.TransactionId,
-                }).ToList();
-
-                transactionList.AddRange(transaction);
-
-            }
-
-            if (goals.Goals.Any())
-            {
-                await UpdateGoalFunding(userId, DateTime.Now);
-            }
-
-            foreach (var tran in transactionList)
-            {
-                var goalName = goals.Goals.EmptyIfNull().FirstOrDefault(g => g.GoalId == tran.SpendingFrom);
-                if (goalName != null)
-                {
-                    tran.SpendingFrom = goalName.GoalName;
-                }
-                else
-                {
-                    tran.SpendingFrom = "Ready to Spend";
-                }
-            }
-
-            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
-            var viewModel = new DashboardVM
-            {
-                CurrentBalance = currentBalance,
-                Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
-                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
-            };
-
-            var failures = responseList.Where(x => x.Success != true);
-            if (failures.Any())
-                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts.";
-
-            return viewModel;
-        }
-
-        public async Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser)
-        {
-            var genericError = "Something went wrong while adding your account";
-            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-            if (dataModel == null)
-            {
-                return StatusRM.CreateError(genericError);
-            }
-
-            var accountIds = dataModel.accounts.Select(x => x.id).ToArray();
-            var responseModel = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
-
-            if (string.IsNullOrWhiteSpace(responseModel.Access_token))
-            {
-                return StatusRM.CreateError(genericError);
-            }
-
-            var defaultTransactionsStart = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd");
-            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds, defaultTransactionsStart);
-
-            return refreshResponse;
-        }
-
         private async Task<StatusRM> UpdateAccountDbAsync(string userId, string accessToken, string[] accountIds, string lastUpdated)
         {
             var genericError = "Something went wrong while contacting Plaid.";
@@ -244,6 +112,140 @@ namespace TooSimple.Managers
             {
                 return StatusRM.CreateError(genericError);
             }
+        }
+
+        public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var includedAccounts = new AccountListDM
+            {
+                Accounts = dataModel.Accounts.Where(a => a.UseForBudgeting)
+            };
+
+            if (!dataModel.Accounts.Any())
+            {
+                var emptyViewModel = new DashboardVM
+                {
+                    Transactions = Enumerable.Empty<TransactionListVM>()
+                };
+
+                return emptyViewModel;
+            }
+
+
+            var responseList = new List<StatusRM>();
+
+            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15));
+
+            if (outdatedAccounts.Any())
+            {
+                var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
+                    x => x.AccountId,
+                    (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
+
+                var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated)?.ToString("yyyy-MM-dd");
+
+                foreach (var token in accountGroup)
+                {
+                    var ids = token.AccountIds.ToArray();
+                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdated);
+                    responseList.Add(newResponse);
+                }
+            }
+
+            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+
+            var transactionList = new List<TransactionListVM>();
+
+            foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
+            {
+                var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
+                {
+                    AccountId = x.AccountId,
+                    AccountName = account.Name,
+                    AccountOwner = x.AccountOwner,
+                    Address = x.Address,
+                    Amount = x.Amount,
+                    AmountDisplayValue = x.Amount?.ToString("c") ?? "$0.00",
+                    City = x.City,
+                    Country = x.Country,
+                    CurrencyCode = x.CurrencyCode,
+                    InternalCategory = x.InternalCategory,
+                    MerchantName = x.MerchantName,
+                    Name = x.Name,
+                    PaymentMethod = x.PaymentMethod,
+                    Pending = x.Pending,
+                    PostalCode = x.PostalCode,
+                    Region = x.Region,
+                    SpendingFrom = x.SpendingFrom,
+                    TransactionCode = x.TransactionCode,
+                    TransactionDate = x.TransactionDate,
+                    TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy"),
+                    TransactionId = x.TransactionId,
+                }).ToList();
+
+                transactionList.AddRange(transaction);
+
+            }
+
+            if (goals.Goals.Any())
+            {
+                await UpdateGoalFunding(userId, DateTime.Now);
+            }
+
+            var goalTransactions = transactionList.EmptyIfNull().Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom));
+            foreach (var tran in transactionList.EmptyIfNull().Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom)))
+            {
+                var goalName = goals.Goals.EmptyIfNull().FirstOrDefault(g => g.GoalId == tran.SpendingFrom);
+                if (goalName != null)
+                {
+                    tran.SpendingFrom = goalName.GoalName;
+                }
+                else
+                {
+                    tran.SpendingFrom = "Ready to Spend";
+                }
+            }
+
+            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
+            var viewModel = new DashboardVM
+            {
+                CurrentBalance = currentBalance,
+                AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
+                Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
+                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
+            };
+
+            var failures = responseList.Where(x => x.Success != true);
+            if (failures.Any())
+                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts.";
+
+            return viewModel;
+        }
+
+        public async Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser)
+        {
+            var genericError = "Something went wrong while adding your account";
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (dataModel == null)
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var accountIds = dataModel.accounts.Select(x => x.id).ToArray();
+            var responseModel = await _plaidDataAccessor.PublicTokenExchangeAsync(dataModel.public_token);
+
+            if (string.IsNullOrWhiteSpace(responseModel.Access_token))
+            {
+                return StatusRM.CreateError(genericError);
+            }
+
+            var defaultTransactionsStart = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd");
+            var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds, defaultTransactionsStart);
+
+            return refreshResponse;
         }
 
         public async Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser)
@@ -341,7 +343,6 @@ namespace TooSimple.Managers
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
-            var transactions = await _accountDataAccessor.GetSpendingFromTransactions(userId);
 
             var viewModel = new DashboardGoalListVM
             {
@@ -350,15 +351,17 @@ namespace TooSimple.Managers
                 {
                     GoalAmount = x.GoalAmount.ToString("c"),
                     UserAccountId = x.UserAccountId,
-                    CurrentBalance = (x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0)).ToString("c"),
+                    CurrentBalance = (x.AmountContributed - x.AmountSpent).ToString("c"),
                     DesiredCompletionDate = x.DesiredCompletionDate,
                     GoalId = x.GoalId,
                     GoalName = x.GoalName,
                     ExpenseFlag = x.ExpenseFlag,
                     RecurrenceTimeFrame = x.RecurrenceTimeFrame,
                     Paused = x.Paused,
-                    ProgressPercent = (x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount)) == 0 ? "0%" 
-                        :  (x.GoalAmount / x.CurrentBalance - (transactions.Transactions.EmptyIfNull().Where(t => t.SpendingFrom == x.GoalId).Sum(y => y.Amount) ?? 0)).ToString() + "%")
+                    ProgressPercent = x.AmountContributed == 0 ? "0%"
+                        : (((x.AmountContributed - x.AmountSpent) / x.GoalAmount) * 100).ToString() + "%",
+                    NextContributionAmount = x.NextContributionAmount.ToString("c"),
+                    NextContributionDate = x.NextContributionDate.ToString("MM/dd")
                 })
             };
 
@@ -470,7 +473,35 @@ namespace TooSimple.Managers
 
         public async Task<StatusRM> UpdateGoalAsync(DashboardSaveGoalAM actionModel)
         {
-            return await _budgetingDataAccessor.SaveGoalAsync(actionModel);
+            var nextContribution = new ContributionDM();
+            var schedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(actionModel.UserAccountId);
+
+            var dataModel = new GoalDM
+            {
+                GoalName = actionModel.GoalName,
+                GoalAmount = actionModel.GoalAmount,
+                DesiredCompletionDate = actionModel.DesiredCompletionDate,
+                FundingScheduleId = actionModel.FundingScheduleId,
+                RecurrenceTimeFrame = actionModel.RecurrenceTimeFrame,
+                ExpenseFlag = actionModel.ExpenseFlag,
+                Paused = actionModel.Paused,
+                AutoSpendMerchantName = actionModel.AutoSpendMerchantName,
+                AutoRefill = actionModel.AutoRefill,
+                UserAccountId = actionModel.UserAccountId,
+            };
+
+            foreach (var schedule in schedules.FundingSchedules)
+            {
+                if (schedule.FundingScheduleId == actionModel.FundingScheduleId)
+                {
+                    nextContribution = CalculateNextContribution(dataModel, schedule, DateTime.Now);
+                }
+            }
+
+            dataModel.NextContributionAmount = nextContribution.NextContributionAmount;
+            dataModel.NextContributionDate = nextContribution.NextContributionDate;
+
+            return await _budgetingDataAccessor.SaveGoalAsync(dataModel);
         }
 
         public async Task<StatusRM> DeleteGoalAsync(string goalId)
@@ -547,9 +578,36 @@ namespace TooSimple.Managers
 
         public async Task<StatusRM> UpdateTransactionAsync(DashboardEditTransactionAM actionModel)
         {
+            var existingTransaction = await _accountDataAccessor.GetTransactionDMAsync(actionModel.TransactionId);
+            var toGoal = "0";
+            var fromGoal = actionModel.SpendingFromId;
+
             if (string.IsNullOrWhiteSpace(actionModel.SpendingFromId))
+            {
                 actionModel.SpendingFromId = null;
-            return await _accountDataAccessor.SaveTransactionAsync(actionModel);
+                toGoal = existingTransaction.SpendingFrom;
+                fromGoal = "0";
+            }
+
+            var responseModel = await _accountDataAccessor.SaveTransactionAsync(actionModel);
+
+            if (!string.IsNullOrWhiteSpace(responseModel.ErrorMessage))
+            {
+                return StatusRM.CreateError(responseModel.ErrorMessage);
+            }
+
+            var moveMoneyModel = new DashboardMoveMoneyAM
+            {
+                Amount = responseModel.Amount ?? 0.00M,
+                AutomatedTransfer = false,
+                FromAccountId = fromGoal,
+                ToAccountId = toGoal,
+                UserAccountId = responseModel.UserAccountId,
+                Note = "",
+                TransferDate = DateTime.Now
+            };
+
+            return await SaveMoveMoneyAsync(moveMoneyModel);
         }
 
         public async Task<DashboardFundingScheduleListVM> GetDashboardFundingScheduleListVM(ClaimsPrincipal currentUser)
@@ -672,9 +730,56 @@ namespace TooSimple.Managers
             return viewModel;
         }
 
-        public async Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel)
+        public async Task<StatusRM> SaveMoveMoneyAsync(DashboardMoveMoneyAM actionModel, bool autoRefill = true)
         {
-            return await _budgetingDataAccessor.SaveMoveMoneyAsync(actionModel);
+            var requestModel = new MoveMoneyRequestModel
+            {
+                Amount = actionModel.Amount,
+                AutomatedTransfer = actionModel.AutomatedTransfer,
+                AutoRefill = autoRefill,
+                FromAccountId = actionModel.FromAccountId,
+                ToAccountId = actionModel.ToAccountId,
+                UserAccountId = actionModel.UserAccountId,
+                Note = actionModel.Note,
+                TransferDate = actionModel.TransferDate
+            };
+
+            var responseModel = await _budgetingDataAccessor.SaveMoveMoneyAsync(requestModel);
+
+            if (responseModel.Success)
+            {
+                if (actionModel.FromAccountId != "0")
+                {
+                    var fromGoal = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.FromAccountId);
+                    var fromSchedule = await _budgetingDataAccessor.GetFundingScheduleDMAsync(fromGoal.FundingScheduleId);
+
+                    //set next contribution to null value to re-calculate
+                    fromGoal.NextContributionDate = Convert.ToDateTime("0001-01-01 00:00:00");
+
+                    var nextContribution = CalculateNextContribution(fromGoal, fromSchedule, DateTime.Now);
+
+                    fromGoal.NextContributionAmount = nextContribution.NextContributionAmount;
+                    fromGoal.NextContributionDate = nextContribution.NextContributionDate;
+                    responseModel = await _budgetingDataAccessor.SaveGoalAsync(fromGoal);
+                }
+
+                if (actionModel.ToAccountId != "0")
+                {
+                    var toGoal = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.ToAccountId);
+                    var toSchedule = await _budgetingDataAccessor.GetFundingScheduleDMAsync(toGoal.FundingScheduleId);
+                    
+                    //set next contribution to null value to re-calculate
+                    toGoal.NextContributionDate = Convert.ToDateTime("0001-01-01 00:00:00");
+
+                    var nextContribution = CalculateNextContribution(toGoal, toSchedule, DateTime.Now);
+
+                    toGoal.NextContributionAmount = nextContribution.NextContributionAmount;
+                    toGoal.NextContributionDate = nextContribution.NextContributionDate;
+                    responseModel = await _budgetingDataAccessor.SaveGoalAsync(toGoal);
+                }
+            }
+
+            return responseModel;
         }
 
         public async Task UpdateGoalFunding(string userId, DateTime todayDateTime)
@@ -692,63 +797,57 @@ namespace TooSimple.Managers
                     {
                         if (schedule.FundingScheduleId == goal.FundingScheduleId)
                         {
-                            var fundingHistory = await _budgetingDataAccessor.GetFundingHistoryListDMAsync(goal.GoalId);
+                            var nextContributionDate = goal.NextContributionDate;
+                            var nextContribution = new ContributionDM();
+                            var currentGoal = goal;
+
+                            var fundingHistory = await _budgetingDataAccessor.GetFundingHistoryListDMAsync(currentGoal.GoalId);
                             var goalHistory = fundingHistory.FundingHistories.EmptyIfNull()
                                 .Where(g => g.ToAccountId == goal.GoalId && g.AutomatedTransfer == true)
                                 .OrderByDescending(g => g.TransferDate)
                                 .ToList();
 
-                            var lastFunded = todayDateTime;
+                            var lastFunded = today;
                             if (goalHistory.Any())
                             {
                                 lastFunded = goalHistory.Max(g => g.TransferDate);
                             }
                             else
                             {
-                                lastFunded = goal.CreationDate;
+                                lastFunded = Convert.ToDateTime("0001-01-01 00:00:00");
                             }
-
-                            var nextContribution = todayDateTime;
-
-                            nextContribution = CalculateNextGoalContributionDate(lastFunded, schedule.FirstContributionDate, schedule.Frequency);
-
-                            while (nextContribution > lastFunded && nextContribution <= today)
+                            
+                            while (nextContributionDate < today)
                             {
-                                int contributionsRemaining = 0;
-
-                                var nextExpenseDate = goal.DesiredCompletionDate;
-
-                                if (!goal.ExpenseFlag || goal.DesiredCompletionDate > today)
-                                    contributionsRemaining = CalculateContributionsToComplete(goal.DesiredCompletionDate, lastFunded, schedule.Frequency);
-                                else
+                                var requestModel = new MoveMoneyRequestModel
                                 {
-                                    nextExpenseDate = CalculateNextExpenseContributionDate(today, nextExpenseDate, goal.RecurrenceTimeFrame ?? 0);
-                                    contributionsRemaining = CalculateContributionsToComplete(nextExpenseDate, lastFunded, schedule.Frequency);
-                                }
-
-                                var nextAmount = Math.Round((goal.GoalAmount - goal.CurrentBalance) / contributionsRemaining, 2);
-
-                                var actionModel = new DashboardMoveMoneyAM
-                                {
-                                    Amount = nextAmount,
+                                    Amount = currentGoal.NextContributionAmount,
+                                    AutomatedTransfer = true,
                                     FromAccountId = "0",
-                                    ToAccountId = goal.GoalId,
+                                    ToAccountId = currentGoal.GoalId,
                                     UserAccountId = userId,
                                     Note = "Automatic funding from " + schedule.FundingScheduleName,
-                                    AutomatedTransfer = true,
-                                    TransferDate = nextContribution,
+                                    TransferDate = currentGoal.NextContributionDate
                                 };
 
-                                var response = await _budgetingDataAccessor.SaveMoveMoneyAsync(actionModel);
+                                var response = await _budgetingDataAccessor.SaveMoveMoneyAsync(requestModel);
+                                lastFunded = currentGoal.NextContributionDate;
 
-                                if (response.Success)
-                                {
-                                    nextContribution = CalculateNextGoalContributionDate(nextContribution, schedule.FirstContributionDate, schedule.Frequency);
-                                }
-                                else
-                                {
+                                currentGoal = await _budgetingDataAccessor.GetGoalDMAsync(currentGoal.GoalId);
+                                nextContribution = CalculateNextContribution(currentGoal, schedule, lastFunded);
+
+                                if (!response.Success)
                                     break;
-                                }
+
+
+                                currentGoal.NextContributionAmount = nextContribution.NextContributionAmount;
+                                currentGoal.NextContributionDate = nextContribution.NextContributionDate;
+
+                                response = await _budgetingDataAccessor.SaveGoalAsync(currentGoal);
+                                if (!response.Success)
+                                    break;
+
+                                nextContributionDate = nextContribution.NextContributionDate;
                             }
                         }
                     }
@@ -756,165 +855,191 @@ namespace TooSimple.Managers
             }
         }
 
-        public int CalculateContributionsToComplete(DateTime completionDate, DateTime lastContributed, int frequency)
+        public ContributionDM CalculateNextContribution(GoalDM goal, FundingScheduleDM schedule, DateTime todayDate)
         {
-            var nextContribution = lastContributed;
+            var nextContributionDate = goal.NextContributionDate;
+            var contributionFrequency = schedule.Frequency;
             var numberOfContributionsRemaining = 0;
+            var completionDate = goal.DesiredCompletionDate;
+            var nextContributionAmount = 0.00M;
+            var recurrence = goal.RecurrenceTimeFrame;
 
-            switch (frequency)
+            todayDate = todayDate.Date;
+
+            //if new goal, figure out first contribution date
+            if (goal.NextContributionDate == Convert.ToDateTime("0001-01-01 00:00:00"))
+            {
+                var scheduleDate = schedule.FirstContributionDate;
+                if (scheduleDate > todayDate)
+                {
+                    nextContributionDate = schedule.FirstContributionDate;
+                }
+                else
+                {
+                    while (todayDate >= scheduleDate)
+                        switch (contributionFrequency)
+                        {
+                            case 1:
+                                scheduleDate = scheduleDate.AddDays(7).Date;
+                                break;
+                            case 2:
+                                scheduleDate = scheduleDate.AddDays(14).Date;
+                                break;
+                            case 3:
+                                scheduleDate = scheduleDate.AddMonths(1).Date;
+                                break;
+                            case 4:
+                                scheduleDate = scheduleDate.AddMonths(2).Date;
+                                break;
+                                //to do
+                                //case 5:
+                                //    var newMonth = nextContribution.AddDays(1);
+                                //    nextContribution = new DateTime(newMonth.Day,
+                                //        newMonth.Month,
+                                //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
+                                //break;
+                        }
+                }
+
+                nextContributionDate = scheduleDate;
+            }
+            else
+            {
+                switch (contributionFrequency)
+                {
+                    case 1:
+                        nextContributionDate = nextContributionDate.AddDays(7).Date;
+                        break;
+                    case 2:
+                        nextContributionDate = nextContributionDate.AddDays(14).Date;
+                        break;
+                    case 3:
+                        nextContributionDate = nextContributionDate.AddMonths(1).Date;
+                        break;
+                    case 4:
+                        nextContributionDate = nextContributionDate.AddMonths(2).Date;
+                        break;
+                        //to do
+                        //case 5:
+                        //    var newMonth = nextContribution.AddDays(1);
+                        //    nextContribution = new DateTime(newMonth.Day,
+                        //        newMonth.Month,
+                        //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
+                        //break;
+                }
+                if (goal.ExpenseFlag)
+                {
+                    if (completionDate < todayDate)
+                    {
+
+                        if (recurrence == 1)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddDays(7);
+                            }
+                        }
+                        else if (recurrence == 2)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddDays(14);
+                            }
+                        }
+                        else if (recurrence == 3)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddMonths(1);
+                            }
+                        }
+                        else if (recurrence == 4)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddMonths(2);
+                            }
+                        }
+                        else if (recurrence == 5)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddMonths(3);
+                            }
+                        }
+                        else if (recurrence == 6)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddMonths(6);
+                            }
+                        }
+                        else if (recurrence == 7)
+                        {
+                            while (todayDate >= completionDate)
+                            {
+                                completionDate = completionDate.AddYears(1);
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            var counterDate = nextContributionDate;
+
+            switch (contributionFrequency)
             {
                 case 1:
-                    while (completionDate > nextContribution)
+                    while (completionDate > counterDate)
                     {
-                        nextContribution = nextContribution.AddDays(7);
+                        counterDate = counterDate.AddDays(7);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 2:
-                    while (completionDate > nextContribution)
+                    while (completionDate > counterDate)
                     {
-                        nextContribution = nextContribution.AddDays(14);
+                        counterDate = counterDate.AddDays(14);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 3:
-                    while (completionDate > nextContribution)
+                    while (completionDate > counterDate)
                     {
-                        nextContribution = nextContribution.AddMonths(1);
+                        counterDate = counterDate.AddMonths(1);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 4:
-                    while (completionDate > nextContribution)
+                    while (completionDate > counterDate)
                     {
-                        nextContribution = nextContribution.AddMonths(2);
+                        counterDate = counterDate.AddMonths(2);
                         numberOfContributionsRemaining++;
                     }
                     break;
-                default:
-                    return 0;
             }
 
-            return numberOfContributionsRemaining;
-
-
-            //var dateDiff = 0;
-
-            //switch (frequency)
-            //{
-            //    case 1:
-            //        dateDiff = (completionDate - lastContributed).Days;
-            //        return dateDiff / 7;
-            //    case 2:
-            //        dateDiff = (completionDate - lastContributed).Days;
-            //        return dateDiff / 14;
-            //    case 3:
-            //        dateDiff = (completionDate.Month - lastContributed.Month);
-            //        return dateDiff;
-            //    case 4:
-            //        dateDiff = (completionDate.Month - lastContributed.Month);
-            //        return dateDiff / 2;
-            //    //to do
-            //    //case 5:
-            //    //    dateDiff = ()
-            //    default:
-            //        return 0;
-            //}
-        }
-
-        public DateTime CalculateNextGoalContributionDate(DateTime lastFunded, DateTime scheduleFirstDate, int frequency)
-        {
-            DateTime nextContribution;
-
-            if (lastFunded.Date >= scheduleFirstDate)
+            if (numberOfContributionsRemaining > 0)
             {
-                nextContribution = lastFunded.Date;
-                while (nextContribution >= scheduleFirstDate)
+                nextContributionAmount = Math.Round((goal.GoalAmount - goal.AmountContributed) / numberOfContributionsRemaining, 2);
+                if (nextContributionAmount < 0)
                 {
-                    switch (frequency)
-                    {
-                        case 1:
-                            scheduleFirstDate = scheduleFirstDate.AddDays(7).Date;
-                            break;
-                        case 2:
-                            scheduleFirstDate = scheduleFirstDate.AddDays(14).Date;
-                            break;
-                        case 3:
-                            scheduleFirstDate = scheduleFirstDate.AddMonths(1).Date;
-                            break;
-                        case 4:
-                            scheduleFirstDate = scheduleFirstDate.AddMonths(2).Date;
-                            break;
-                            //to do
-                            //case 5:
-                            //    var newMonth = scheduleFirstDate.AddDays(1);
-                            //    nextContribution = new DateTime(newMonth.Day,
-                            //        newMonth.Month,
-                            //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
-                            //break;
-                    }
-                }
-
-                nextContribution = scheduleFirstDate;
-                return nextContribution;
-            }
-
-            return scheduleFirstDate;
-        }
-
-        public DateTime CalculateNextExpenseContributionDate(DateTime today, DateTime nextExpenseDate, int recurrence)
-        {
-            if (recurrence == 1)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddDays(7);
+                    nextContributionAmount = 0;
                 }
             }
-            else if (recurrence == 2)
+            else
             {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddDays(14);
-                }
-            }
-            else if (recurrence == 3)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddMonths(1);
-                }
-            }
-            else if (recurrence == 4)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddMonths(2);
-                }
-            }
-            else if (recurrence == 5)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddMonths(3);
-                }
-            }
-            else if (recurrence == 6)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddMonths(6);
-                }
-            }
-            else if (recurrence == 7)
-            {
-                while (today >= nextExpenseDate)
-                {
-                    nextExpenseDate = nextExpenseDate.AddYears(1);
-                }
+                nextContributionAmount = 0;
             }
 
-            return nextExpenseDate;
+            var dataModel = new ContributionDM
+            {
+                NextContributionDate = nextContributionDate,
+                NextContributionAmount = nextContributionAmount
+            };
+
+            return dataModel;
         }
     }
 }
