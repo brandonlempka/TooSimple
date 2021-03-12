@@ -26,5 +26,6 @@ namespace TooSimple.Models.ViewModels
         public int? RecurrenceTimeFrame { get; set; }
         public List<SelectListItem> RecurrenceTimeFrameOptions { get; set; }
         public DateTime CreationDate { get; set; }
+        public List<DashboardFundingHistoryVM> FundingHistory { get; set; }
     }
 }

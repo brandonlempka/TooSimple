@@ -183,7 +183,7 @@ namespace TooSimple.Controllers
         {
             var response = await _dashboardManager.SaveMoveMoneyAsync(actionModel);
 
-            return RedirectToAction("Dashboard", response);
+            return RedirectToAction("Index", response);
         }
     }
 }

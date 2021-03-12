@@ -296,6 +296,8 @@ namespace TooSimple.Managers
                 AccountTypeId = account.AccountTypeId,
                 AvailableBalance = account.AvailableBalance,
                 CurrentBalance = account.CurrentBalance,
+                CurrentBalanceDisplayValue = account.CurrentBalance?.ToString("c") ?? "$0.00",
+                AvailableBalanceDisplayValue = account.AvailableBalance?.ToString("c") ?? "$0.00",
                 CurrencyCode = account.CurrencyCode,
                 LastUpdated = account.LastUpdated?.ToString("MM/dd/yyyy hh:mm"),
                 Mask = account.Mask,
@@ -324,7 +326,7 @@ namespace TooSimple.Managers
                     TransactionDate = t.TransactionDate,
                     TransactionDateDisplayValue = t.TransactionDate?.ToString("MM/dd/yyyy"),
                     TransactionId = t.TransactionId,
-                })
+                }).OrderByDescending(t => t.TransactionDate)
             };
         }
 
@@ -362,7 +364,7 @@ namespace TooSimple.Managers
                         : (((x.AmountContributed - x.AmountSpent) / x.GoalAmount) * 100).ToString() + "%",
                     NextContributionAmount = x.NextContributionAmount.ToString("c"),
                     NextContributionDate = x.NextContributionDate.ToString("MM/dd")
-                })
+                }).OrderBy(g => g.GoalName)
             };
 
             return viewModel;
@@ -468,6 +470,21 @@ namespace TooSimple.Managers
                 }
             }
 
+            //Get goal history
+            viewModel.FundingHistory = new List<DashboardFundingHistoryVM>();
+
+            var fundingHistory = await _budgetingDataAccessor.GetFundingHistoryListDMAsync(goalId);
+            viewModel.FundingHistory = fundingHistory.FundingHistories.EmptyIfNull().Select(f => new DashboardFundingHistoryVM
+            {
+                Amount = f.Amount,
+                AutomatedTransfer = f.AutomatedTransfer,
+                FromAccount = f.FromAccountId,
+                ToAccount = f.ToAccountId,
+                FundingHistoryId = f.FundingHistoryId,
+                Note = f.Note,
+                TransferDate = f.TransferDate
+            }).OrderByDescending(f => f.TransferDate).ToList();
+
             return viewModel;
         }
 
@@ -475,6 +492,7 @@ namespace TooSimple.Managers
         {
             var nextContribution = new ContributionDM();
             var schedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(actionModel.UserAccountId);
+            var currentData = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.GoalId);
 
             var dataModel = new GoalDM
             {
@@ -488,6 +506,9 @@ namespace TooSimple.Managers
                 AutoSpendMerchantName = actionModel.AutoSpendMerchantName,
                 AutoRefill = actionModel.AutoRefill,
                 UserAccountId = actionModel.UserAccountId,
+                GoalId = actionModel.GoalId,
+                AmountContributed = currentData.AmountContributed,
+                AmountSpent = currentData.AmountSpent
             };
 
             foreach (var schedule in schedules.FundingSchedules)
@@ -791,7 +812,7 @@ namespace TooSimple.Managers
             //Goal calculation
             foreach (var goal in goals.Goals.Where(g => !g.Paused).ToList())
             {
-                if (goal.DesiredCompletionDate > today || goal.ExpenseFlag)
+                if ((goal.DesiredCompletionDate >= today || goal.ExpenseFlag) && goal.NextContributionDate <= today)
                 {
                     foreach (var schedule in schedules.FundingSchedules.ToList())
                     {
@@ -817,7 +838,7 @@ namespace TooSimple.Managers
                                 lastFunded = Convert.ToDateTime("0001-01-01 00:00:00");
                             }
                             
-                            while (nextContributionDate < today)
+                            while (nextContributionDate <= today)
                             {
                                 var requestModel = new MoveMoneyRequestModel
                                 {
@@ -991,28 +1012,28 @@ namespace TooSimple.Managers
             switch (contributionFrequency)
             {
                 case 1:
-                    while (completionDate > counterDate)
+                    while (completionDate >= counterDate)
                     {
                         counterDate = counterDate.AddDays(7);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 2:
-                    while (completionDate > counterDate)
+                    while (completionDate >= counterDate)
                     {
                         counterDate = counterDate.AddDays(14);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 3:
-                    while (completionDate > counterDate)
+                    while (completionDate >= counterDate)
                     {
                         counterDate = counterDate.AddMonths(1);
                         numberOfContributionsRemaining++;
                     }
                     break;
                 case 4:
-                    while (completionDate > counterDate)
+                    while (completionDate >= counterDate)
                     {
                         counterDate = counterDate.AddMonths(2);
                         numberOfContributionsRemaining++;

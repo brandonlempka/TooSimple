@@ -26,6 +26,17 @@
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: @goal.ProgressPercent" aria-valuenow="@goal.ProgressPercent" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
+                <div class="row">
+                    @if (goal.Paused)
+                    {
+                        <p>Paused</p>
+                    }
+                    else
+                    {
+                        <p>Next contribution: @goal.NextContributionAmount on @goal.NextContributionDate</p>
+                    }
+                </div>
+
             </td>
             <td><a href="~/Dashboard/AddEditGoal?id=@goal.GoalId">Edit</a></td>
             <td><a href="~/Dashboard/DeleteGoal?isExpense=true&id=@goal.GoalId">Delete</a></td>

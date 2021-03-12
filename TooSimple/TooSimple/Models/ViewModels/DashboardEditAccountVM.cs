@@ -14,7 +14,9 @@ namespace TooSimple.Models.ViewModels
         public string Name { get; set; }
         public string NickName { get; set; }
         public decimal? CurrentBalance { get; set; }
+        public string CurrentBalanceDisplayValue { get; set; }
         public decimal? AvailableBalance { get; set; }
+        public string AvailableBalanceDisplayValue { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
         public bool UseForBudgeting { get; set; }
