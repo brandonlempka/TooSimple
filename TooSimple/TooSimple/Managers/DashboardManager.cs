@@ -788,7 +788,7 @@ namespace TooSimple.Managers
                 {
                     var toGoal = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.ToAccountId);
                     var toSchedule = await _budgetingDataAccessor.GetFundingScheduleDMAsync(toGoal.FundingScheduleId);
-                    
+
                     //set next contribution to null value to re-calculate
                     toGoal.NextContributionDate = Convert.ToDateTime("0001-01-01 00:00:00");
 
@@ -837,7 +837,7 @@ namespace TooSimple.Managers
                             {
                                 lastFunded = Convert.ToDateTime("0001-01-01 00:00:00");
                             }
-                            
+
                             while (nextContributionDate <= today)
                             {
                                 var requestModel = new MoveMoneyRequestModel
@@ -948,63 +948,63 @@ namespace TooSimple.Managers
                         //        DateTime.DaysInMonth(newMonth.AddDays(1).Year, newMonth.Month));
                         //break;
                 }
-                if (goal.ExpenseFlag)
-                {
-                    if (completionDate < todayDate)
-                    {
+            }
 
-                        if (recurrence == 1)
+            if (goal.ExpenseFlag)
+            {
+                if (completionDate <= todayDate)
+                {
+
+                    if (recurrence == 1)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddDays(7);
-                            }
+                            completionDate = completionDate.AddDays(7);
                         }
-                        else if (recurrence == 2)
+                    }
+                    else if (recurrence == 2)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddDays(14);
-                            }
+                            completionDate = completionDate.AddDays(14);
                         }
-                        else if (recurrence == 3)
+                    }
+                    else if (recurrence == 3)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddMonths(1);
-                            }
+                            completionDate = completionDate.AddMonths(1);
                         }
-                        else if (recurrence == 4)
+                    }
+                    else if (recurrence == 4)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddMonths(2);
-                            }
+                            completionDate = completionDate.AddMonths(2);
                         }
-                        else if (recurrence == 5)
+                    }
+                    else if (recurrence == 5)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddMonths(3);
-                            }
+                            completionDate = completionDate.AddMonths(3);
                         }
-                        else if (recurrence == 6)
+                    }
+                    else if (recurrence == 6)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddMonths(6);
-                            }
+                            completionDate = completionDate.AddMonths(6);
                         }
-                        else if (recurrence == 7)
+                    }
+                    else if (recurrence == 7)
+                    {
+                        while (todayDate >= completionDate)
                         {
-                            while (todayDate >= completionDate)
-                            {
-                                completionDate = completionDate.AddYears(1);
-                            }
+                            completionDate = completionDate.AddYears(1);
                         }
                     }
                 }
-
             }
 
             var counterDate = nextContributionDate;

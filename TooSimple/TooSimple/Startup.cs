@@ -81,6 +81,12 @@ namespace TooSimple
             });
 
             services.AddProgressiveWebApp();
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = Configuration.GetSection("AppSettings:GoogleClientId").Value;
+                    options.ClientSecret = Configuration.GetSection("Appsettings:GoogleSecret").Value;
+                });
         }
     
 

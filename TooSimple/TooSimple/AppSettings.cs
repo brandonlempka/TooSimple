@@ -10,5 +10,7 @@ namespace TooSimple
         public string PlaidBaseUrl { get; set; }
         public string PlaidClientId { get; set; }
         public string PlaidSecret { get; set; }
+        public string GoogleClientId { get; set; }
+        public string GoogleSecret { get; set; }
     }
 }
