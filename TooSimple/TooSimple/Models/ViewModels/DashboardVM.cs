@@ -16,6 +16,7 @@ namespace TooSimple.Models.ViewModels
         public decimal? CurrentBalance { get; set; }
         public decimal? AvailableBalance { get; set; }
         public string AmountDisplayValue { get; set; }
+        public string AmountDisplayColor { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
         public IEnumerable<TransactionListVM> Transactions { get; set; }

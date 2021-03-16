@@ -166,8 +166,8 @@ namespace TooSimple.Managers
                     AccountName = account.Name,
                     AccountOwner = x.AccountOwner,
                     Address = x.Address,
-                    Amount = x.Amount,
-                    AmountDisplayValue = x.Amount?.ToString("c") ?? "$0.00",
+                    Amount = x.Amount * -1,
+                    AmountDisplayValue = x.Amount.HasValue ? (x.Amount.Value * -1).ToString("c") : "$0.00",
                     City = x.City,
                     Country = x.Country,
                     CurrencyCode = x.CurrencyCode,
@@ -194,8 +194,7 @@ namespace TooSimple.Managers
                 await UpdateGoalFunding(userId, DateTime.Now);
             }
 
-            var goalTransactions = transactionList.EmptyIfNull().Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom));
-            foreach (var tran in transactionList.EmptyIfNull().Where(t => !string.IsNullOrWhiteSpace(t.SpendingFrom)))
+            foreach (var tran in transactionList.EmptyIfNull())
             {
                 var goalName = goals.Goals.EmptyIfNull().FirstOrDefault(g => g.GoalId == tran.SpendingFrom);
                 if (goalName != null)
@@ -206,6 +205,11 @@ namespace TooSimple.Managers
                 {
                     tran.SpendingFrom = "Ready to Spend";
                 }
+
+                if (tran.Amount < 0)
+                    tran.AmountDisplayColor = "#ff0000";
+                else
+                    tran.AmountDisplayColor = "#32CD32";
             }
 
             var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
@@ -216,6 +220,11 @@ namespace TooSimple.Managers
                 Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
                 LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
             };
+
+            if (currentBalance < 0)
+            {
+                viewModel.AmountDisplayColor = "#ff0000";
+            }
 
             var failures = responseList.Where(x => x.Success != true);
             if (failures.Any())
@@ -402,7 +411,8 @@ namespace TooSimple.Managers
                         Value = ((int)option).ToString(),
                         Selected = false
                     }).ToList(),
-                    ExpenseFlag = isExpense
+                    ExpenseFlag = isExpense,
+                    FundingHistory = new List<DashboardFundingHistoryVM>()
                 };
 
             var existingAccount = await _budgetingDataAccessor.GetGoalDMAsync(goalId);

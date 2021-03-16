@@ -13,6 +13,7 @@ namespace TooSimple.Models.ViewModels
         public string AccountOwner { get; set; }
         public decimal? Amount { get; set; }
         public string AmountDisplayValue { get; set; }
+        public string AmountDisplayColor { get; set; }
         public DateTime? TransactionDate { get; set; }
         public string TransactionDateDisplayValue { get; set; }
         public string CurrencyCode { get; set; }
