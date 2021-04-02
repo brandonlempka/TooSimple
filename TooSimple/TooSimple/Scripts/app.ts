@@ -1,28 +1,36 @@
+$(document).on('click', '#tableTransactions .pagerLink', function (e) {
+    e.preventDefault();
 
+    $.ajax({
+        url: $(this).attr('href'),
+        success: function (html) {
+            $('#tableTransactions').replaceWith(html);
+        },
+        error: function () {
+            alert('Something went wrong while performing the search.')
+        }
+    })
 
+    return false;
+})
 
-
-function TSButton() {
-    let name: string = "Fred";
-    document.getElementById("ts-example").innerHTML = greeter(user);
+//Call to update plaid data in background, enabling user to use site normally while data loads
+function updatePlaidAccounts() {
+    $.ajax({
+        url: $('#urlPlaidAccountUpdate').attr('href'),
+        type: 'POST',
+        success: function (response) {
+            if (response.success) {
+                $('#alertRefresh').removeClass('d-none');
+                $('#alertUpdating').addClass('d-none');
+            } else {
+                $('#txtErrorMessage').html('response.errorMessage');
+                $('#alertUpdating').addClass('d-none');
+            }
+        },
+        error: function () {
+            $('#txtErrorMessage').html('response.errorMessage');
+            $('#alertUpdating').addClass('d-none');
+        }
+    })
 }
-
-class Student {
-    fullName: string;
-    constructor(public firstName: string, public middleInitial: string, public lastName: string) {
-        this.fullName = firstName + " " + middleInitial + " " + lastName;
-    }
-}
-
-interface Person {
-    firstName: string;
-    lastName: string;
-}
-
-function greeter(person: Person) {
-    return "Hello, " + person.firstName + " " + person.lastName;
-}
-
-let user = new Student("Fred", "M.", "Smith");
-
-$('#')

@@ -153,23 +153,23 @@ namespace TooSimple.Managers
 
             var responseList = new List<StatusRM>();
 
-            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15));
+            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15) && !a.ReLoginRequired);
 
-            if (outdatedAccounts.Any())
-            {
-                var accountGroup = dataModel.Accounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
-                    x => x.AccountId,
-                    (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
+            //if (outdatedAccounts.Any())
+            //{
+            //    var accountGroup = dataModel.Accounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
+            //        x => x.AccountId,
+            //        (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
 
-                var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated)?.ToString("yyyy-MM-dd");
+            //    var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated)?.ToString("yyyy-MM-dd");
 
-                foreach (var token in accountGroup)
-                {
-                    var ids = token.AccountIds.ToArray();
-                    var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdated);
-                    responseList.Add(newResponse);
-                }
-            }
+            //    foreach (var token in accountGroup)
+            //    {
+            //        var ids = token.AccountIds.ToArray();
+            //        var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdated);
+            //        responseList.Add(newResponse);
+            //    }
+            //}
 
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
 
@@ -231,7 +231,10 @@ namespace TooSimple.Managers
                 viewModel.ErrorMessage += _relogError;
             }
 
-            viewModel.NeedsUpdating = true;
+            if (outdatedAccounts.Any())
+                viewModel.NeedsUpdating = true;
+            else
+                viewModel.NeedsUpdating = false;
             return viewModel;
         }
 
@@ -260,7 +263,7 @@ namespace TooSimple.Managers
         /// </summary>
         /// <param name="currentUser">current User provided by controller</param>
         /// <returns></returns>
-        public async Task<DashboardVM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser)
+        public async Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
@@ -316,35 +319,13 @@ namespace TooSimple.Managers
             };
 
             var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
-            var viewModel = new DashboardVM
-            {
-                CurrentBalance = currentBalance,
-                AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
-                TransactionTableVM = new TransactionTableVM
-                {
-                    Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
-                },
-                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
-            };
-
-            if (currentBalance < 0)
-            {
-                viewModel.AmountDisplayColor = "#ff0000";
-            }
-
             var failures = responseList.Where(x => x.Success != true);
+
             if (failures.Any())
-                viewModel.ErrorMessage = string.Concat(responseList.SelectMany(x => x.ErrorMessage));
+                return StatusRM.CreateError(string.Concat(responseList.SelectMany(x => x.ErrorMessage)));
 
-            var expiredLogins = dataModel.Accounts.Where(a => a.ReLoginRequired);
+            return StatusRM.CreateSuccess(null, "Success");
 
-            if (expiredLogins.Any())
-            {
-                viewModel.ErrorMessage += _relogError;
-            }
-
-            viewModel.NeedsUpdating = true;
-            return viewModel;
         }
 
         public async Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser)

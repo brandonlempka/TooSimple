@@ -31,7 +31,7 @@ namespace TooSimple.Controllers
             return View("~/Views/Dashboard/Dashboard.cshtml", viewModel);
         }
 
-        public async Task<DashboardVM> UpdateAccounts()
+        public async Task<StatusRM> UpdateAccounts()
         {
             var currentUser = this.User;
             var responseModel = await _dashboardManager.UpdatePlaidAccountDataAsync(currentUser);

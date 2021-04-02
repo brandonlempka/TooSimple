@@ -7,7 +7,7 @@
             sync_problem
         </span>
         <h4 class="alert-heading">Warning</h4>
-        <p>@Model.ErrorMessage</p>
+        <p id="txtErrorMessage">@Model.ErrorMessage</p>
     </div>
 }
 
@@ -48,5 +48,14 @@ else
         });
     </script>
 }
+
+@* Refresh for new data modal *@
+<div class="alert alert-secondary d-none" role="alert" id="alertRefresh">
+    <span class="material-icons alert-icon">restore_page</span>
+    <h4 class="alert-heading">New transactions are waiting</h4>
+    <p>
+        We have the latest data from your accounts ready to display. Refresh the page to see it!
+    </p>
+</div>
 
 @await Html.PartialAsync("~/Views/Dashboard/_TransactionTable.cshtml", Model.TransactionTableVM)

@@ -84,6 +84,10 @@ body {
     table {
         color: white !important;
     }
+
+    a {
+        color: white !important;
+    }
 }
 
 .pagerContainer {
@@ -103,11 +107,11 @@ body {
         @include borderRadius(5px);
 
         &.pagerEllipsis {
-            background: #fff;
+            background: #343a40;
         }
 
         &:not(.pagerEllipsis) {
-            background: #eae7e3;
+            background: #343a40;
 
             &:hover {
                 color: inherit;
@@ -123,7 +127,7 @@ body {
         }
 
         &.selected {
-            background: #acd037;
+            background: #007bff;
         }
     }
 }
