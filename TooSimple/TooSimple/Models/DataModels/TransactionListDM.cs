@@ -8,5 +8,6 @@ namespace TooSimple.Models.DataModels
     public class TransactionListDM
     {
         public IEnumerable<TransactionDM> Transactions { get; set; }
+        public int TransactionCount { get; set; }
     }
 }

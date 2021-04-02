@@ -9,6 +9,7 @@ using TooSimple.Managers;
 using TooSimple.Models.ActionModels;
 using TooSimple.Models.DataModels.Plaid;
 using TooSimple.Models.ResponseModels;
+using TooSimple.Models.ViewModels;
 
 namespace TooSimple.Controllers
 {
@@ -28,6 +29,21 @@ namespace TooSimple.Controllers
             var viewModel = await _dashboardManager.GetDashboardVMAsync(currentUser);
 
             return View("~/Views/Dashboard/Dashboard.cshtml", viewModel);
+        }
+
+        public async Task<DashboardVM> UpdateAccounts()
+        {
+            var currentUser = this.User;
+            var responseModel = await _dashboardManager.UpdatePlaidAccountDataAsync(currentUser);
+            return responseModel;
+        }
+
+        public async Task<IActionResult> GetTransactionTablePage(int page)
+        {
+            var currentUser = this.User;
+            var viewModel = await _dashboardManager.GetTransactionTableVMAsync(currentUser, page);
+
+            return PartialView("~/Views/Dashboard/_TransactionTable.cshtml", viewModel);
         }
 
         [HttpPost]

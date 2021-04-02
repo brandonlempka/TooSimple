@@ -20,5 +20,7 @@ namespace TooSimple.Models.DataModels
         public bool UseForBudgeting { get; set; }
         public DateTime? LastUpdated { get; set; }
         public IEnumerable<TransactionDM> Transactions { get; set; }
+        public bool ReLoginRequired { get; set; }
+
     }
 }

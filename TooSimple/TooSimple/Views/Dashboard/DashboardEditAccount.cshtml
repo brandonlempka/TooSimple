@@ -36,6 +36,8 @@
     <p>Last updated @Model.LastUpdated</p>
 }
 
+@if (Model.Transactions.Any())
+{ 
 <table class="table">
     <thead>
         <tr>
@@ -74,5 +76,5 @@
 }
 else
 {
-<p>No transactions were found for your accounts.</p>
+<p>No transactions were found for this account.</p>
 }

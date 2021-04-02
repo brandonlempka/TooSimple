@@ -12,9 +12,11 @@ namespace TooSimple.DataAccessors
     public interface IAccountDataAccessor
     {
         Task<AccountListDM> GetAccountDMAsync(string userId, string accountId = "");
+        Task<TransactionListDM> GetTransactionListAsync(string userId, int page, int resultsPerPage);
         Task<StatusRM> SavePlaidAccountData(IEnumerable<AccountDM> dataModel);
         Task<StatusRM> SavePlaidTransactionData(IEnumerable<TransactionDM> dataModel);
         Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel);
+        Task<StatusRM> SetRelog(string accountId);
         Task<StatusRM> DeleteAccountAsync(string accountId);
         Task<TransactionDM> GetTransactionDMAsync(string transactionId);
         Task<TransactionListDM> GetSpendingFromTransactions(string userId);

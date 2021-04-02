@@ -85,23 +85,33 @@ namespace TooSimple.DataAccessors
 
         public async Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken, string[] accountIds)
         {
-            var dataModel = new PlaidAccountRequestDM
+            try
             {
-                access_token = accessToken,
-                client_id = _appSettings.PlaidClientId,
-                secret = _appSettings.PlaidSecret,
-                options = new PlaidAccountOptionsDM
+                var dataModel = new PlaidAccountRequestDM
                 {
-                    account_ids = accountIds
-                }
-            };
+                    access_token = accessToken,
+                    client_id = _appSettings.PlaidClientId,
+                    secret = _appSettings.PlaidSecret,
+                    options = new PlaidAccountOptionsDM
+                    {
+                        account_ids = accountIds
+                    }
+                };
 
-            var requestJson = JsonConvert.SerializeObject(dataModel);
-            var url = _appSettings.PlaidBaseUrl + "accounts/balance/get";
+                var requestJson = JsonConvert.SerializeObject(dataModel);
+                var url = _appSettings.PlaidBaseUrl + "accounts/balance/get";
 
-            var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
+                var response = await ApiExtension.GetApiResponse(url, "POST", requestJson);
 
-            return JsonConvert.DeserializeObject<PlaidAccountRequestRM>(response);
+                return JsonConvert.DeserializeObject<PlaidAccountRequestRM>(response);
+            }
+            catch(Exception ex)
+            {
+                return new PlaidAccountRequestRM
+                {
+                    request_id = ex.ToString()
+                };
+            }
         }
 
         public async Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel requestModel)

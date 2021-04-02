@@ -21,5 +21,6 @@ namespace TooSimple.Models.EFModels
         public bool UseForBudgeting { get; set; }
         public DateTime? LastUpdated { get; set; }
         public ICollection<Transaction> Transactions { get; set; }
+        public bool ReLoginRequired { get; set; }
     }
 }

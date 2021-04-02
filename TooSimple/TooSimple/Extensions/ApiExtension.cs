@@ -30,15 +30,34 @@ namespace TooSimple.Extensions
                 }
             }
 
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            string result = null;
-            using (var reader = new StreamReader(httpResponse.GetResponseStream()))
+            try
             {
-                result = reader.ReadToEnd();
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                string result = null;
+                using (var reader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    result = reader.ReadToEnd();
+                }
+
+                return result;
             }
+            catch(WebException ex)
+            {
+                string result = null;
+                using (WebResponse response = ex.Response)
+                {
+                    HttpWebResponse httpResponse = (HttpWebResponse)response;
+                    using (Stream data = response.GetResponseStream())
+                    {
+                        using (var reader = new StreamReader(data))
+                        {
+                            result = reader.ReadToEnd();
+                        }
+                    }
+                }
 
-            return result;
-
+                return result;
+            }
         }
     }
 }

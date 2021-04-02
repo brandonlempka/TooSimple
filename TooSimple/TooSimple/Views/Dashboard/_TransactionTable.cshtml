@@ -1,0 +1,41 @@
+﻿@model TooSimple.Models.ViewModels.TransactionTableVM
+<div id="tableTransactions">
+    <table class="table" id="tableDashboardTransactions">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Spent From</th>
+            </tr>
+        </thead>
+        @foreach (var transaction in Model.Transactions)
+        {
+            <tr>
+                <td>
+                    @transaction.TransactionDateDisplayValue
+                </td>
+                <td>
+                    <a href="~/Dashboard/LoadTransaction?id=@transaction.TransactionId">
+                        <div style="height:100%;width:100%;">
+                            @transaction.Name
+                            <p>
+                                <small class="text-muted">@transaction.MerchantName</small>
+                            </p>
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <span style="color:@transaction.AmountDisplayColor">
+                        @transaction.AmountDisplayValue
+                    </span>
+                </td>
+                <td>
+                    @transaction.SpendingFrom
+                </td>
+            </tr>
+        }
+    </table>
+
+    @await Html.PartialAsync("~/Views/Dashboard/_Pager.cshtml", Model.PagerVM)
+</div> 

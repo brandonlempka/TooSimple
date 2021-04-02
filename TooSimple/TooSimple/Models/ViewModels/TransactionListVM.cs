@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TooSimple.Models.DataModels;
 
 namespace TooSimple.Models.ViewModels
 {
@@ -29,5 +30,30 @@ namespace TooSimple.Models.ViewModels
         public string TransactionCode { get; set; }
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }
+
+        public TransactionListVM(TransactionDM x, string accountName)
+        {
+            AccountId = x.AccountId;
+            AccountOwner = x.AccountOwner;
+            AccountName = accountName;
+            Address = x.Address;
+            Amount = x.Amount * -1;
+            AmountDisplayValue = x.Amount.HasValue ? (x.Amount.Value * -1).ToString("c") : "$0.00";
+            City = x.City;
+            Country = x.Country;
+            CurrencyCode = x.CurrencyCode;
+            InternalCategory = x.InternalCategory;
+            MerchantName = x.MerchantName;
+            Name = x.Name;
+            PaymentMethod = x.PaymentMethod;
+            Pending = x.Pending;
+            PostalCode = x.PostalCode;
+            Region = x.Region;
+            SpendingFrom = x.SpendingFrom;
+            TransactionCode = x.TransactionCode;
+            TransactionDate = x.TransactionDate;
+            TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy");
+            TransactionId = x.TransactionId;
+        }
     }
 }

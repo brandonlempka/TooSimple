@@ -19,7 +19,8 @@ namespace TooSimple.Models.ViewModels
         public string AmountDisplayColor { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
-        public IEnumerable<TransactionListVM> Transactions { get; set; }
+        public TransactionTableVM TransactionTableVM { get; set; }
         public string ErrorMessage { get; set; }
+        public bool NeedsUpdating { get; set; }
     }
 }

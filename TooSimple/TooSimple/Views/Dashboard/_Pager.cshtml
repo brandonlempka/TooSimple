@@ -1,0 +1,40 @@
+﻿@model TooSimple.Models.ViewModels.PagerVM
+
+@if (Model.PageNumbers.Count() > 1)
+{
+    <div class="pagerContainer" data-current-page="@Model.CurrentPage" data-replace-with-selector="@Model.ReplaceWithSelector">
+        @foreach (var pagerItem in Model.PageNumbers)
+        {
+            if (pagerItem.HasValue)
+            {
+                if (pagerItem.Value == Model.CurrentPage)
+                {
+                    <span class="pagerItem selected">
+                        @pagerItem.Value
+                    </span>
+                }
+                else
+                {
+                    if (Model.IsAjaxPager)
+                    {
+                        <span href="@(Model.FullUrlWithoutPageNumber)@(pagerItem.Value)" title="Go to Page @(pagerItem.Value)" class="pagerItem pagerLink">
+                            @pagerItem.Value
+                        </span>
+                    }
+                    else
+                    {
+                        <a href="@(Model.FullUrlWithoutPageNumber)@(pagerItem.Value)" title="Go to Page @(pagerItem.Value)" class="pagerItem pagerLink">
+                            @pagerItem.Value
+                        </a>
+                    }
+                }
+            }
+            else
+            {
+                <span class="pagerItem pagerEllipsis">
+                    ...
+                </span>
+            }
+        }
+    </div>
+}

@@ -1,9 +1,20 @@
 ﻿@model TooSimple.Models.ViewModels.DashboardVM
 
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <span class="material-icons alert-icon">
+            sync_problem
+        </span>
+        <h4 class="alert-heading">Warning</h4>
+        <p>@Model.ErrorMessage</p>
+    </div>
+}
+
 @if (Model.AccountId != null)
 {
     <h2>Get started by adding an account</h2>
-    <a href="~/Dashboard/Accounts">Add Account <span class="material-icons">library_add</span></a>
+    <a href="~/Dashboard/Accounts">Add Account <span class="material-icons">add</span></a>
 }
 else
 {
@@ -20,46 +31,22 @@ else
     }
 }
 
-@if (Model.Transactions.Any())
+@if (Model.NeedsUpdating)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Spent From</th>
-            </tr>
-        </thead>
-        @foreach (var transaction in Model.Transactions)
-        {
-            <tr>
-                <td>
-                    @transaction.TransactionDateDisplayValue
-                </td>
-                <td>
-                    <a href="~/Dashboard/LoadTransaction?id=@transaction.TransactionId">
-                        <div style="height:100%;width:100%;">
-                            @transaction.Name
-                            <p>
-                                <small class="text-muted">@transaction.MerchantName</small>
-                            </p>
-                        </div>
-                    </a>
-                </td>
-                <td>
-                    <span style="color:@transaction.AmountDisplayColor">
-                        @transaction.AmountDisplayValue
-                    </span>
-                </td>
-                <td>
-                    @transaction.SpendingFrom
-                </td>
-            </tr>
-        }
-    </table>
+    <div class="alert alert-info" role="alert" id="alertUpdating">
+        <span class="material-icons alert-icon">autorenew</span>
+        <h4 class="alert-heading">Refreshing your accounts</h4>
+        <p>
+            We are refreshing your accounts with new transactions from Plaid. You can continue to use the site normally. New transactions will appear here soon.
+        </p>
+        <a href="~/Dashboard/UpdateAccounts" id="urlPlaidAccountUpdate" class="hide"></a>
+    </div>
+
+    <script type="text/javascript">
+        addLoadEvent(function () {
+            updatePlaidAccounts()
+        });
+    </script>
 }
-else
-{
-    <p>No transactions were found for your accounts.</p>
-}
+
+@await Html.PartialAsync("~/Views/Dashboard/_TransactionTable.cshtml", Model.TransactionTableVM)

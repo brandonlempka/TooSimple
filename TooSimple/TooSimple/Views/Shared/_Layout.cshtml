@@ -8,7 +8,28 @@
     <link rel="stylesheet" href="~/lib/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker3.min.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet">
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/TooSimple.css" />
+    <script type="text/javascript">
+        var toosimple = toosimple || {};
+        toosimple.LoadEventFired = false;
+        function addLoadEvent(func) {
+            if (toosimple.LoadEventFired)
+                func();
+            else if (typeof onload != "function")
+                window.onload = function () {
+                    toosimple.LoadEventFired = 1;
+                    func()
+                };
+            else {
+                var oldWindowLoadEvent = window.onload;
+                window.onload = function () {
+                    toosimple.LoadEventFired = 1;
+                    oldWindowLoadEvent && oldWindowLoadEvent();
+                    func()
+                };
+            }
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -53,7 +74,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2021 - TooSimple - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2021 - Too Simple - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -23,6 +23,7 @@ namespace TooSimple.Managers
         private IAccountDataAccessor _accountDataAccessor;
         private IPlaidDataAccessor _plaidDataAccessor;
         private IBudgetingDataAccessor _budgetingDataAccessor;
+        private string _relogError = "Your credentials have expired for some of your accounts. Head to the Accounts page to fix this.";
 
         public DashboardManager(IAccountDataAccessor accountDataAccessor, IPlaidDataAccessor plaidDataAccessor, IBudgetingDataAccessor budgetingDataAccessor)
         {
@@ -35,6 +36,18 @@ namespace TooSimple.Managers
         {
             var genericError = "Something went wrong while contacting Plaid.";
             var account = await _plaidDataAccessor.GetAccountBalancesAsync(accessToken, accountIds);
+            
+            //If error, disable this account
+            if (!string.IsNullOrWhiteSpace(account.error_code))
+            {
+                foreach (var lockedAccount in accountIds)
+                {
+                    await _accountDataAccessor.SetRelog(lockedAccount);
+                }
+
+                return StatusRM.CreateError(_relogError);
+            }
+
             var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
             var goalsList = goals.Goals.ToList();
 
@@ -97,6 +110,7 @@ namespace TooSimple.Managers
             //Auto spend
             foreach (var transaction in newTransactions)
             {
+                //to do
                 var spendingFrom = goalsList.FirstOrDefault(g => g.AutoSpendMerchantName == transaction.MerchantName && g.AutoSpendMerchantName != null);
                 if (spendingFrom != null)
                     transaction.SpendingFrom = spendingFrom.GoalId;
@@ -118,21 +132,24 @@ namespace TooSimple.Managers
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
-            var includedAccounts = new AccountListDM
-            {
-                Accounts = dataModel.Accounts.Where(a => a.UseForBudgeting)
-            };
 
             if (!dataModel.Accounts.Any())
             {
                 var emptyViewModel = new DashboardVM
                 {
-                    Transactions = Enumerable.Empty<TransactionListVM>()
+                    TransactionTableVM = new TransactionTableVM
+                    {
+                        Transactions = Enumerable.Empty<TransactionListVM>()
+                    }
                 };
 
                 return emptyViewModel;
             }
 
+            var includedAccounts = new AccountListDM
+            {
+                Accounts = dataModel.Accounts.Where(a => a.UseForBudgeting)
+            };
 
             var responseList = new List<StatusRM>();
 
@@ -140,7 +157,7 @@ namespace TooSimple.Managers
 
             if (outdatedAccounts.Any())
             {
-                var accountGroup = dataModel.Accounts.GroupBy(x => x.AccessToken,
+                var accountGroup = dataModel.Accounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
                     x => x.AccountId,
                     (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
 
@@ -160,38 +177,118 @@ namespace TooSimple.Managers
 
             foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
             {
-                var transaction = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM
-                {
-                    AccountId = x.AccountId,
-                    AccountName = account.Name,
-                    AccountOwner = x.AccountOwner,
-                    Address = x.Address,
-                    Amount = x.Amount * -1,
-                    AmountDisplayValue = x.Amount.HasValue ? (x.Amount.Value * -1).ToString("c") : "$0.00",
-                    City = x.City,
-                    Country = x.Country,
-                    CurrencyCode = x.CurrencyCode,
-                    InternalCategory = x.InternalCategory,
-                    MerchantName = x.MerchantName,
-                    Name = x.Name,
-                    PaymentMethod = x.PaymentMethod,
-                    Pending = x.Pending,
-                    PostalCode = x.PostalCode,
-                    Region = x.Region,
-                    SpendingFrom = x.SpendingFrom,
-                    TransactionCode = x.TransactionCode,
-                    TransactionDate = x.TransactionDate,
-                    TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy"),
-                    TransactionId = x.TransactionId,
-                }).ToList();
+                var transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x, account.Name)).ToList();
 
-                transactionList.AddRange(transaction);
+                transactionList.AddRange(transactions);
 
             }
 
             if (goals.Goals.Any())
             {
                 await UpdateGoalFunding(userId, DateTime.Now);
+            }
+
+            //foreach (var tran in transactionList.EmptyIfNull())
+            //{
+            //    var goalName = goals.Goals.EmptyIfNull().FirstOrDefault(g => g.GoalId == tran.SpendingFrom);
+            //    if (goalName != null)
+            //    {
+            //        tran.SpendingFrom = goalName.GoalName;
+            //    }
+            //    else
+            //    {
+            //        tran.SpendingFrom = "Ready to Spend";
+            //    }
+
+            //    if (tran.Amount < 0)
+            //        tran.AmountDisplayColor = "#ff0000";
+            //    else
+            //        tran.AmountDisplayColor = "#32CD32";
+            //}
+
+            var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
+            var viewModel = new DashboardVM
+            {
+                CurrentBalance = currentBalance,
+                AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
+                TransactionTableVM = await GetTransactionTableVMAsync(currentUser, 1),
+                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
+            };
+
+            if (currentBalance < 0)
+            {
+                viewModel.AmountDisplayColor = "#ff0000";
+            }
+
+            var failures = responseList.Where(x => x.Success != true);
+            if (failures.Any())
+                viewModel.ErrorMessage = string.Concat(responseList.SelectMany(x => x.ErrorMessage));
+
+            var expiredLogins = dataModel.Accounts.Where(a => a.ReLoginRequired);
+
+            if (expiredLogins.Any())
+            {
+                viewModel.ErrorMessage += _relogError;
+            }
+
+            viewModel.NeedsUpdating = true;
+            return viewModel;
+        }
+
+        public async Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var resultsPerPage = 25;
+            var accountList = await _accountDataAccessor.GetTransactionListAsync(userId, pageNumber, resultsPerPage);
+            var transactions = accountList.Transactions.Select(x => new TransactionListVM(x, "test"));
+            //var transactions = accountList.SelectMany(x => x.Transactions.Select(y => new TransactionListVM(y, x.NickName)));
+            var maxPages = Convert.ToInt32(Math.Ceiling(accountList.TransactionCount / (decimal)resultsPerPage));
+
+            return new TransactionTableVM
+            {
+                Transactions = transactions,
+                PagerVM = new PagerVM(pageNumber, maxPages,  $"/Dashboard/GetTransactionTablePage?page=")
+                {
+                    IsAjaxPager = true
+                }
+            };
+
+        }
+
+        /// <summary>
+        /// Called via ajax to update accounts from plaid without needing to make user wait
+        /// </summary>
+        /// <param name="currentUser">current User provided by controller</param>
+        /// <returns></returns>
+        public async Task<DashboardVM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var responseList = new List<StatusRM>();
+            var accountGroup = dataModel.Accounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
+                x => x.AccountId,
+                (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
+
+            var lastUpdated = dataModel.Accounts.Min(a => a.LastUpdated);
+            var lastUpdatedString = lastUpdated?.ToString("yyyy-MM-dd");
+
+            foreach (var token in accountGroup)
+            {
+                var ids = token.AccountIds.ToArray();
+                var newResponse = await UpdateAccountDbAsync(userId, token.AccessToken, ids, lastUpdatedString);
+                responseList.Add(newResponse);
+            }
+
+            var goals = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
+
+            var transactionList = new List<TransactionListVM>();
+
+            foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
+            {
+                var transaction = account.Transactions.EmptyIfNull().Where(t => t.TransactionDate > lastUpdated).Select(x => new TransactionListVM(x, account.Name));
+
+                transactionList.AddRange(transaction);
+
             }
 
             foreach (var tran in transactionList.EmptyIfNull())
@@ -212,12 +309,21 @@ namespace TooSimple.Managers
                     tran.AmountDisplayColor = "#32CD32";
             }
 
+            var updatedAccounts = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var includedAccounts = new AccountListDM
+            {
+                Accounts = updatedAccounts.Accounts.Where(a => a.UseForBudgeting)
+            };
+
             var currentBalance = await _budgetingDataAccessor.CalculateUserAccountBalance(includedAccounts, userId);
             var viewModel = new DashboardVM
             {
                 CurrentBalance = currentBalance,
                 AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
-                Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
+                TransactionTableVM = new TransactionTableVM
+                {
+                    Transactions = transactionList.OrderByDescending(y => y.TransactionDate),
+                },
                 LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
             };
 
@@ -228,8 +334,16 @@ namespace TooSimple.Managers
 
             var failures = responseList.Where(x => x.Success != true);
             if (failures.Any())
-                viewModel.ErrorMessage = "Something went wrong while refreshing your accounts.";
+                viewModel.ErrorMessage = string.Concat(responseList.SelectMany(x => x.ErrorMessage));
 
+            var expiredLogins = dataModel.Accounts.Where(a => a.ReLoginRequired);
+
+            if (expiredLogins.Any())
+            {
+                viewModel.ErrorMessage += _relogError;
+            }
+
+            viewModel.NeedsUpdating = true;
             return viewModel;
         }
 
@@ -312,30 +426,8 @@ namespace TooSimple.Managers
                 Mask = account.Mask,
                 Name = account.Name,
                 UseForBudgeting = account.UseForBudgeting,
-                Transactions = account.Transactions.EmptyIfNull().Select(t => new TransactionListVM
-                {
-                    AccountId = t.AccountId,
-                    AccountName = account.NickName ?? account.Name,
-                    AccountOwner = t.AccountOwner,
-                    Address = t.Address,
-                    Amount = t.Amount,
-                    AmountDisplayValue = t.Amount?.ToString("c") ?? "$0.00",
-                    City = t.City,
-                    Country = t.Country,
-                    CurrencyCode = t.CurrencyCode,
-                    InternalCategory = t.InternalCategory,
-                    MerchantName = t.MerchantName,
-                    Name = t.Name,
-                    PaymentMethod = t.PaymentMethod,
-                    Pending = t.Pending,
-                    PostalCode = t.PostalCode,
-                    Region = t.Region,
-                    SpendingFrom = t.SpendingFrom,
-                    TransactionCode = t.TransactionCode,
-                    TransactionDate = t.TransactionDate,
-                    TransactionDateDisplayValue = t.TransactionDate?.ToString("MM/dd/yyyy"),
-                    TransactionId = t.TransactionId,
-                }).OrderByDescending(t => t.TransactionDate)
+                Transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x, account.NickName ?? account.Name))
+                    .OrderByDescending(t => t.TransactionDate)
             };
         }
 
@@ -502,7 +594,12 @@ namespace TooSimple.Managers
         {
             var nextContribution = new ContributionDM();
             var schedules = await _budgetingDataAccessor.GetFundingScheduleListDMAsync(actionModel.UserAccountId);
-            var currentData = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.GoalId);
+            var currentData = new GoalDM();
+
+            if (!string.IsNullOrWhiteSpace(actionModel.GoalId))
+            {
+                currentData = await _budgetingDataAccessor.GetGoalDMAsync(actionModel.GoalId);
+            }
 
             var dataModel = new GoalDM
             {

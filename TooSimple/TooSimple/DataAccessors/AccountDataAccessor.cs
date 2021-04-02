@@ -99,6 +99,7 @@ namespace TooSimple.DataAccessors
                     NickName = x.NickName,
                     LastUpdated = x.LastUpdated,
                     UseForBudgeting = x.UseForBudgeting,
+                    ReLoginRequired = x.ReLoginRequired,
                     Transactions = from tran in _db.Transactions
                                    where tran.UserAccountId == userId
                                    select new TransactionDM
@@ -128,6 +129,49 @@ namespace TooSimple.DataAccessors
 
             return allAccounts;
         }
+
+        public async Task<TransactionListDM> GetTransactionListAsync(string userId, int page, int resultsPerPage)
+        {
+            var skip = (page - 1) * resultsPerPage;
+            var count = (from transaction in _db.Transactions
+                         where transaction.UserAccountId == userId
+                         select transaction.TransactionId).Count();
+
+            return new TransactionListDM
+            {
+                Transactions = (
+                               from transaction in _db.Transactions
+                               join goal in _db.Goals on transaction.SpendingFrom equals goal.GoalId into init
+                               from x in init.DefaultIfEmpty()
+                               where transaction.UserAccountId == userId
+                               orderby transaction.TransactionDate descending
+                               select new TransactionDM
+                               {
+                                   AccountId = transaction.AccountId,
+                                   AccountOwner = transaction.AccountOwner,
+                                   Address = transaction.Address,
+                                   Amount = transaction.Amount,
+                                   UserAccountId = transaction.UserAccountId,
+                                   City = transaction.City,
+                                   Country = transaction.Country,
+                                   CurrencyCode = transaction.CurrencyCode,
+                                   InternalCategory = transaction.InternalCategory,
+                                   MerchantName = transaction.MerchantName,
+                                   Name = transaction.Name,
+                                   PaymentMethod = transaction.PaymentMethod,
+                                   Pending = transaction.Pending,
+                                   PostalCode = transaction.PostalCode,
+                                   ReferenceNumber = transaction.ReferenceNumber,
+                                   Region = transaction.Region,
+                                   SpendingFrom = x.GoalName,
+                                   TransactionCode = transaction.TransactionCode,
+                                   TransactionDate = transaction.TransactionDate,
+                                   TransactionId = transaction.TransactionId,
+                               }).Skip(skip).Take(resultsPerPage),
+                TransactionCount = count
+            };
+        }
+
 
         public async Task<StatusRM> SavePlaidAccountData(IEnumerable<AccountDM> dataModel)
         {
@@ -321,6 +365,23 @@ namespace TooSimple.DataAccessors
                 return StatusRM.CreateError(ex);
             }
 
+        }
+
+        public async Task<StatusRM> SetRelog(string accountId)
+        {
+            try
+            {
+                var account = await _db.Accounts.FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+                account.ReLoginRequired = true;
+
+                await _db.SaveChangesAsync();
+                return StatusRM.CreateSuccess("null", "Succesffuly flagged for relog");
+            }
+            catch (Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
         }
 
         public async Task<StatusRM> DeleteAccountAsync(string accountId)
