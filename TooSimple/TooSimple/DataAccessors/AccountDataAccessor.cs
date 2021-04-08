@@ -172,7 +172,6 @@ namespace TooSimple.DataAccessors
             };
         }
 
-
         public async Task<StatusRM> SavePlaidAccountData(IEnumerable<AccountDM> dataModel)
         {
             try

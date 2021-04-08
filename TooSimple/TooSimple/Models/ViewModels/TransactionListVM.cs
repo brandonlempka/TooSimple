@@ -31,7 +31,7 @@ namespace TooSimple.Models.ViewModels
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }
 
-        public TransactionListVM(TransactionDM x, string accountName)
+        public TransactionListVM(TransactionDM x, string accountName = "")
         {
             AccountId = x.AccountId;
             AccountOwner = x.AccountOwner;
@@ -49,7 +49,7 @@ namespace TooSimple.Models.ViewModels
             Pending = x.Pending;
             PostalCode = x.PostalCode;
             Region = x.Region;
-            SpendingFrom = x.SpendingFrom;
+            SpendingFrom = x.SpendingFrom ?? "Ready to Spend";
             TransactionCode = x.TransactionCode;
             TransactionDate = x.TransactionDate;
             TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy");

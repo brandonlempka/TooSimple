@@ -243,7 +243,7 @@ namespace TooSimple.Managers
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var resultsPerPage = 25;
             var accountList = await _accountDataAccessor.GetTransactionListAsync(userId, pageNumber, resultsPerPage);
-            var transactions = accountList.Transactions.Select(x => new TransactionListVM(x, "test"));
+            var transactions = accountList.Transactions.Select(x => new TransactionListVM(x));
             //var transactions = accountList.SelectMany(x => x.Transactions.Select(y => new TransactionListVM(y, x.NickName)));
             var maxPages = Convert.ToInt32(Math.Ceiling(accountList.TransactionCount / (decimal)resultsPerPage));
 
@@ -561,8 +561,8 @@ namespace TooSimple.Managers
             {
                 Amount = f.Amount,
                 AutomatedTransfer = f.AutomatedTransfer,
-                FromAccount = f.FromAccountId,
-                ToAccount = f.ToAccountId,
+                FromAccount = f.FromAccountId ?? "Ready to Spend",
+                ToAccount = f.ToAccountId ?? "Ready to Spend",
                 FundingHistoryId = f.FundingHistoryId,
                 Note = f.Note,
                 TransferDate = f.TransferDate

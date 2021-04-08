@@ -346,13 +346,17 @@ namespace TooSimple.DataAccessors
             return new FundingHistoryListDM
             {
                 FundingHistories = from history in _db.FundingHistories
+                                   join toGoal in _db.Goals on history.ToAccountId equals toGoal.GoalId into toInit
+                                   from x in toInit.DefaultIfEmpty()
+                                   join fromGoal in _db.Goals on history.FromAccountId equals fromGoal.GoalId into fromInit
+                                   from y in fromInit.DefaultIfEmpty()
                                    where history.ToAccountId == accountId || history.FromAccountId == accountId
                                    select new FundingHistoryDM
                                    {
                                        Amount = history.Amount,
                                        AutomatedTransfer = history.AutomatedTransfer,
-                                       FromAccountId = history.FromAccountId,
-                                       ToAccountId = history.ToAccountId,
+                                       FromAccountId = x.GoalName,
+                                       ToAccountId = y.GoalName,
                                        FundingHistoryId = history.FundingHistoryId,
                                        Note = history.Note,
                                        TransferDate = history.TransferDate

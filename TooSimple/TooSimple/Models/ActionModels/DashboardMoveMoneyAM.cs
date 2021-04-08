@@ -14,7 +14,6 @@ namespace TooSimple.Models.ActionModels
         public string Note { get; set; }
         public DateTime TransferDate { get; set; }
         public bool AutomatedTransfer { get; set; }
-
         public DashboardMoveMoneyAM()
         {
             AutomatedTransfer = false;

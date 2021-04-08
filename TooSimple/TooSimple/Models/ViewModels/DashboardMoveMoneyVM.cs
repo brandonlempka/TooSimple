@@ -13,5 +13,6 @@ namespace TooSimple.Models.ViewModels
         public string FromAccountId { get; set; }
         public string ToAccountId { get; set; }
         public decimal Amount { get; set; }
+        public string Note { get; set; }
     }
 }

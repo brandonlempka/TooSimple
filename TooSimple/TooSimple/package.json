@@ -3,7 +3,6 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
-    "@types/jquery": "3.3.1",
-    "@types/bootstrap-datepicker": "1.9.0"
+    "@types/jquery": "3.3.1"
   }
 }
