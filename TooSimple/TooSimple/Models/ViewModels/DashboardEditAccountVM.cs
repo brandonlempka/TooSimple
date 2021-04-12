@@ -18,9 +18,10 @@ namespace TooSimple.Models.ViewModels
         public decimal? AvailableBalance { get; set; }
         public string AvailableBalanceDisplayValue { get; set; }
         public string CurrencyCode { get; set; }
-        public string AccessToken { get; set; }
+        public string PublicToken { get; set; }
         public bool UseForBudgeting { get; set; }
         public IEnumerable<TransactionListVM> Transactions { get; set; }
         public string ErrorMessage { get; set; }
+        public bool RelogRequired { get; set; }
     }
 }

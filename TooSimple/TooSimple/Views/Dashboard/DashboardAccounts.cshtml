@@ -19,6 +19,12 @@
         <tr>
             <td>
                 @account.NickName
+                @if (account.ReLoginRequired)
+                {
+                    <div class="alert-icon">
+                        <span class="material-icons text-warning">login</span>
+                    </div>
+                }
             </td>
             <td>
                 <a href="~/Dashboard/LoadAccount?id=@account.AccountId"><span class="material-icons">mode_edit</span></a>
@@ -29,9 +35,6 @@
         </tr>
     }
 </table>
-
-
-
 
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 

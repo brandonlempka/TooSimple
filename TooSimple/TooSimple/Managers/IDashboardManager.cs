@@ -18,6 +18,7 @@ namespace TooSimple.Managers
         Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1);
         Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser);
         Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser);
+        Task<StatusRM> PublicTokenUpdateAsync(PublicTokenUpdateAM actionModel, ClaimsPrincipal currentUser);
         Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser);
         Task<DashboardEditAccountVM> GetIndividualAccountVMAsync(string Id, ClaimsPrincipal currentUser);
         Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel);

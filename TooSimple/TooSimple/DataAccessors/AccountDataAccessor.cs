@@ -53,6 +53,7 @@ namespace TooSimple.DataAccessors
                                        NickName = x.NickName,
                                        LastUpdated = x.LastUpdated,
                                        UseForBudgeting = x.UseForBudgeting,
+                                       ReLoginRequired = x.ReLoginRequired,
                                        Transactions = from tran in _db.Transactions
                                                       where tran.AccountId == accountId
                                                       select new TransactionDM
@@ -231,26 +232,26 @@ namespace TooSimple.DataAccessors
                         await _db.Transactions.AddAsync(new Transaction
                         {
                             TransactionId = transaction.TransactionId,
-                                            AccountId = transaction.AccountId,
-                                            AccountOwner = transaction.AccountOwner,
-                                            Amount = transaction.Amount ?? 0,
-                                            TransactionDate = transaction.TransactionDate,
-                                            CurrencyCode = transaction.CurrencyCode,
-                                            Address = transaction.Address,
-                                            City = transaction.City,
-                                            Country = transaction.Country,
-                                            PostalCode = transaction.PostalCode,
-                                            Region = transaction.Region,
-                                            MerchantName = transaction.MerchantName,
-                                            Name = transaction.Name,
-                                            PaymentMethod = transaction.PaymentMethod,
-                                            ReferenceNumber = transaction.ReferenceNumber,
-                                            Pending = transaction.Pending,
-                                            TransactionCode = transaction.TransactionCode,
-                                            UnofficialCurrencyCode = transaction.CurrencyCode,
-                                            SpendingFrom = transaction.SpendingFrom,
-                                            InternalCategory = transaction.InternalCategory,
-                                            UserAccountId = transaction.UserAccountId
+                            AccountId = transaction.AccountId,
+                            AccountOwner = transaction.AccountOwner,
+                            Amount = transaction.Amount ?? 0,
+                            TransactionDate = transaction.TransactionDate,
+                            CurrencyCode = transaction.CurrencyCode,
+                            Address = transaction.Address,
+                            City = transaction.City,
+                            Country = transaction.Country,
+                            PostalCode = transaction.PostalCode,
+                            Region = transaction.Region,
+                            MerchantName = transaction.MerchantName,
+                            Name = transaction.Name,
+                            PaymentMethod = transaction.PaymentMethod,
+                            ReferenceNumber = transaction.ReferenceNumber,
+                            Pending = transaction.Pending,
+                            TransactionCode = transaction.TransactionCode,
+                            UnofficialCurrencyCode = transaction.CurrencyCode,
+                            SpendingFrom = transaction.SpendingFrom,
+                            InternalCategory = transaction.InternalCategory,
+                            UserAccountId = transaction.UserAccountId
                         });
                     }
                 }
@@ -264,7 +265,7 @@ namespace TooSimple.DataAccessors
                 //                USING 
                 //                (
                 //                    SELECT   @TransactionId as Id
-                            
+
                 //                ) AS entity
                 //                ON  [dbo].[Transaction].[TransactionId] = entity.Id
                 //                WHEN NOT MATCHED THEN
@@ -366,7 +367,7 @@ namespace TooSimple.DataAccessors
 
         }
 
-        public async Task<StatusRM> SetRelog(string accountId)
+        public async Task<StatusRM> SetRelogAsync(string accountId)
         {
             try
             {
@@ -376,6 +377,23 @@ namespace TooSimple.DataAccessors
 
                 await _db.SaveChangesAsync();
                 return StatusRM.CreateSuccess("null", "Succesffuly flagged for relog");
+            }
+            catch (Exception ex)
+            {
+                return StatusRM.CreateError(ex);
+            }
+        }
+
+        public async Task<StatusRM> UnsetRelogAsync(string accountId)
+        {
+            try
+            {
+                var account = await _db.Accounts.FirstOrDefaultAsync(x => x.AccountId == accountId);
+
+                account.ReLoginRequired = false;
+
+                await _db.SaveChangesAsync();
+                return StatusRM.CreateSuccess("null", "Successfully unflagged for relog");
             }
             catch (Exception ex)
             {

@@ -60,6 +60,16 @@ namespace TooSimple.Controllers
             return RedirectToAction("Index", response);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> PlaidLinkUpdate([FromBody] PublicTokenUpdateAM actionModel)
+        {
+            var currentUser = this.User;
+            var response = new StatusRM();
+
+            response = await _dashboardManager.PublicTokenUpdateAsync(actionModel, currentUser);
+            return RedirectToAction("Index", response);
+        }
+
         public async Task<IActionResult> LoadTransaction(string Id)
         {
             var currentUser = this.User;

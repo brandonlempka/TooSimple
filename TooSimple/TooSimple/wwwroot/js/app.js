@@ -22,13 +22,21 @@ function updatePlaidAccounts() {
                 $('#alertUpdating').addClass('d-none');
             }
             else {
-                $('#txtErrorMessage').html('response.errorMessage');
                 $('#alertUpdating').addClass('d-none');
+                $('#alertRefresh').removeClass('d-none');
+                $('#alertRefresh').removeClass('alert-secondary');
+                $('#alertRefresh').addClass('alert-danger');
+                $('#alertRefreshHeader').html('Something went wrong while refreshing accounts');
+                $('#lblRefresh').html(response.errorMessage);
             }
         },
-        error: function () {
-            $('#txtErrorMessage').html('response.errorMessage');
+        error: function (response) {
             $('#alertUpdating').addClass('d-none');
+            $('#alertRefresh').removeClass('d-none');
+            $('#alertRefresh').removeClass('alert-secondary');
+            $('#alertRefresh').addClass('alert-danger');
+            $('#alertRefreshHeader').html('Something went wrong while refreshing accounts');
+            $('#lblRefresh').html(response.responseText);
         }
     });
 }

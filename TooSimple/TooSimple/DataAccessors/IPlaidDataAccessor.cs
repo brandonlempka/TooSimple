@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TooSimple.Models.DataModels;
 using TooSimple.Models.DataModels.Plaid;
 using TooSimple.Models.RequestModels;
 using TooSimple.Models.ResponseModels;
@@ -13,6 +14,7 @@ namespace TooSimple.DataAccessors
     {
         Task<CreateLinkTokenRM> CreateLinkTokenAsync(string userId);
         Task<TokenExchangeRM> PublicTokenExchangeAsync(string publicToken);
+        Task<CreateLinkTokenRM> PublicTokenUpdateAsync(AccountDM account);
         Task<PlaidAccountRequestRM> GetAccountBalancesAsync(string accessToken, string[] accountIds);
         Task<PlaidTransactionRequestRM> GetTransactionsAsync(PlaidTransactionRequestModel requestModel);
     }

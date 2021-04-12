@@ -16,5 +16,6 @@ namespace TooSimple.Models.ViewModels
         public string NickName { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
+        public bool ReLoginRequired { get; set; }
     }
 }

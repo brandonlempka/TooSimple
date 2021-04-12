@@ -2,6 +2,28 @@
 
 <h1 class="mb-4">@Model.NickName</h1>
 
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <span class="material-icons alert-icon">
+            sync_problem
+        </span>
+        <h4 class="alert-heading">Warning</h4>
+        <p id="txtErrorMessage">@Model.ErrorMessage</p>
+    </div>
+}
+
+@if (Model.RelogRequired)
+{
+    <div class="alert alert-warning" id="alertRelog" role="alert">
+        <span class="material-icons alert-icon">
+            login
+        </span>
+        <h4 class="alert-heading" id="headerAlertRelog">Cannot access this account</h4>
+        <p id="txtErrorMessage">It appears your credenitals have changed, or this account is locked out. <a href="javascript:startLink()">Click here</a> to re-log in.</p>
+    </div>
+}
+
 <form id="editAccountForm" action="~/Dashboard/SaveAccount" method="post">
     @Html.HiddenFor(m => Model.AccountId)
     <div class="col-sm-8">
@@ -33,44 +55,85 @@
 }
 
 @if (Model.Transactions.Any())
-{ 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Merchant Name</th>
-            <th>Transaction Name</th>
-            <th>Amount</th>
-            <th>Spent From</th>
-            <th>Edit Transaction</th>
-        </tr>
-    </thead>
-    @foreach (var transaction in Model.Transactions)
-    {
-        <tr>
-            <td>
-                @transaction.TransactionDateDisplayValue
-            </td>
-            <td>
-                @transaction.MerchantName
-            </td>
-            <td>
-                @transaction.Name
-            </td>
-            <td>
-                @transaction.AmountDisplayValue
-            </td>
-            <td>
-                @transaction.SpendingFrom
-            </td>
-            <td>
-                <a href="~/Dashboard/LoadTransaction?id=@transaction.TransactionId"><span class="material-icons">mode_edit</span></a>
-            </td>
-        </tr>
-    }
-</table>
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Merchant Name</th>
+                <th>Transaction Name</th>
+                <th>Amount</th>
+                <th>Spent From</th>
+                <th>Edit Transaction</th>
+            </tr>
+        </thead>
+        @foreach (var transaction in Model.Transactions)
+        {
+            <tr>
+                <td>
+                    @transaction.TransactionDateDisplayValue
+                </td>
+                <td>
+                    @transaction.MerchantName
+                </td>
+                <td>
+                    @transaction.Name
+                </td>
+                <td>
+                    @transaction.AmountDisplayValue
+                </td>
+                <td>
+                    @transaction.SpendingFrom
+                </td>
+                <td>
+                    <a href="~/Dashboard/LoadTransaction?id=@transaction.TransactionId"><span class="material-icons">mode_edit</span></a>
+                </td>
+            </tr>
+        }
+    </table>
 }
 else
 {
-<p>No transactions were found for this account.</p>
+    <p>No transactions were found for this account.</p>
 }
+
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+<script type="text/javascript">
+    // Initialize Link with the token parameter
+    // set to the generated link_token for the Item
+    const handler = Plaid.create({
+        token: '@Model.PublicToken',
+        onSuccess: (public_token, metadata) => {
+            var accountId = '@Model.AccountId';
+            fetch('/Dashboard/PlaidLinkUpdate', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    public_token: public_token,
+                    accountId: accountId
+                }),
+            });
+        },
+        onExit: (err, metadata) => {
+            if (err != null) {
+                $('#txtErrorMessage').html(err);
+                $('#headerAlertRelog').html('Something went wrong while re-logging');
+                fetch('/Dashboard/PlaidLinkUpdate', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        public_token: err,
+                    }),
+                });
+            }
+        },
+    });
+    function startLink() {
+        handler.open();
+    }
+</script>

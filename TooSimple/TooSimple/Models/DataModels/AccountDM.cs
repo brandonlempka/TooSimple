@@ -21,6 +21,5 @@ namespace TooSimple.Models.DataModels
         public DateTime? LastUpdated { get; set; }
         public IEnumerable<TransactionDM> Transactions { get; set; }
         public bool ReLoginRequired { get; set; }
-
     }
 }

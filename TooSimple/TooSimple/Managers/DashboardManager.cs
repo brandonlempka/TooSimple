@@ -42,7 +42,7 @@ namespace TooSimple.Managers
             {
                 foreach (var lockedAccount in accountIds)
                 {
-                    await _accountDataAccessor.SetRelog(lockedAccount);
+                    await _accountDataAccessor.SetRelogAsync(lockedAccount);
                 }
 
                 return StatusRM.CreateError(_relogError);
@@ -322,7 +322,7 @@ namespace TooSimple.Managers
             var failures = responseList.Where(x => x.Success != true);
 
             if (failures.Any())
-                return StatusRM.CreateError(string.Concat(responseList.SelectMany(x => x.ErrorMessage)));
+                return StatusRM.CreateError(string.Concat(failures.SelectMany(x => x.ErrorMessage)));
 
             return StatusRM.CreateSuccess(null, "Success");
 
@@ -352,6 +352,41 @@ namespace TooSimple.Managers
             return refreshResponse;
         }
 
+        public async Task<StatusRM> PublicTokenUpdateAsync(PublicTokenUpdateAM actionModel, ClaimsPrincipal currentUser)
+        {
+            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (actionModel.public_token == "Error")
+            {
+                return StatusRM.CreateError(actionModel.public_token);
+            }
+
+            var accounts = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var account = accounts.Accounts.Where(x => x.AccountId == actionModel.accountId).FirstOrDefault();
+            var unsetAccounts = accounts.Accounts.Where(x => x.AccessToken == account.AccessToken);
+
+            if (account == null)
+            {
+                return StatusRM.CreateError("Something went wrong");
+            }
+
+            var responseList = new List<StatusRM>();
+
+            foreach (var unsetAccount in unsetAccounts)
+            {
+                var response = await _accountDataAccessor.UnsetRelogAsync(unsetAccount.AccountId);
+                responseList.Add(response);
+            }
+
+            var failures = responseList.Where(x => x.Success != true);
+
+            if (failures.Any())
+                return StatusRM.CreateError(string.Concat(failures.SelectMany(x => x.ErrorMessage)));
+
+            return StatusRM.CreateSuccess(null, "Successfully unset relog");
+        }
+
+
         public async Task<DashboardAccountsVM> GetDashboardAccountsVMAsync(ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -380,7 +415,8 @@ namespace TooSimple.Managers
                     CurrencyCode = account.CurrencyCode,
                     LastUpdated = account.LastUpdated,
                     Name = account.Name,
-                    NickName = account.NickName ?? account.Name
+                    NickName = account.NickName ?? account.Name,
+                    ReLoginRequired = account.ReLoginRequired
                 })
             };
 
@@ -393,6 +429,13 @@ namespace TooSimple.Managers
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId, Id);
 
             var account = dataModel.Accounts.FirstOrDefault();
+            var publicToken = string.Empty;
+            if (account.ReLoginRequired)
+            {
+                var responseModel = await _plaidDataAccessor.PublicTokenUpdateAsync(account);
+                publicToken = responseModel.Link_Token;
+            }
+
             return new DashboardEditAccountVM
             {
                 AccountId = account.AccountId,
@@ -408,7 +451,9 @@ namespace TooSimple.Managers
                 Name = account.Name,
                 UseForBudgeting = account.UseForBudgeting,
                 Transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x, account.NickName ?? account.Name))
-                    .OrderByDescending(t => t.TransactionDate)
+                    .OrderByDescending(t => t.TransactionDate),
+                RelogRequired = account.ReLoginRequired,
+                PublicToken = publicToken
             };
         }
 
