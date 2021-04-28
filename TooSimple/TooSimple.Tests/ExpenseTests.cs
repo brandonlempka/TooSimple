@@ -3,11 +3,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
-using TooSimple.Data;
 using TooSimple.DataAccessors;
-using TooSimple.Extensions;
+using TooSimple.DataAccessors.Plaid;
+using TooSimple.DataAccessors.TooSimple;
 using TooSimple.Managers;
-using TooSimple.Models.DataModels;
+using TooSimple.Managers.Managers;
+using TooSimple.Poco.Models.DataModels;
 
 namespace TooSimple.Tests
 {

@@ -8,12 +8,15 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
-using TooSimple.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TooSimple.DataAccessors;
-using TooSimple.Managers;
+using TooSimple.Managers.Managers;
+using TooSimple.Poco.Models.Settings;
+using TooSimple.DataAccessors.Data;
+using TooSimple.DataAccessors.Plaid;
+using TooSimple.DataAccessors.TooSimple;
 
 namespace TooSimple
 {

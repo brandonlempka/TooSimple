@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using TooSimple.DataAccessors;
-using TooSimple.Models;
-using TooSimple.Models.DataModels.Plaid;
-using TooSimple.Models.ViewModels;
+using TooSimple.DataAccessors.Plaid;
+using TooSimple.Poco.Models;
 
 namespace TooSimple.Controllers
 {

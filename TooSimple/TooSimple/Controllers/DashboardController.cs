@@ -6,10 +6,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TooSimple.Managers;
+using TooSimple.Managers.Managers;
 using TooSimple.Models.ActionModels;
-using TooSimple.Models.DataModels.Plaid;
-using TooSimple.Models.ResponseModels;
-using TooSimple.Models.ViewModels;
+using TooSimple.Poco.Models.ActionModels;
+using TooSimple.Poco.Models.ResponseModels;
+using TooSimple.Poco.Models.ResponseModels.Plaid;
 
 namespace TooSimple.Controllers
 {

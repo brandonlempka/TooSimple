@@ -38,4 +38,10 @@
     <PackageReference Include="WebEssentials.AspNetCore.PWA" Version="1.0.65" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\TooSimple.Managers\TooSimple.Managers.csproj" />
+    <ProjectReference Include="..\TooSimple.Poco\TooSimple.Poco.csproj" />
+  </ItemGroup>
+
 </Project>
