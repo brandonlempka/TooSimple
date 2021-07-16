@@ -8,7 +8,6 @@
   "background_color": "#303030",
   "theme_color": "#33cc99",
   "icons": [
-
     {
       "src": "images/icons/icon-192x192.png",
       "sizes": "192x192",
@@ -28,6 +27,44 @@
       "src": "images/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Move Money",
+      "short_name": "Move",
+      "description": "Move money between goals or expenses.",
+      "url": "/Dashboard/MoveMoney",
+      "icons": [
+        {
+          "src": "images/icons/shortcuts/transfer.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "short_name": "Goals",
+      "description": "View your goals.",
+      "url": "/Dashboard/Goals",
+      "icons": [
+        {
+          "src": "images/icons/shortcuts/goals.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Expenses",
+      "short_name": "Expenses",
+      "description": "View your expenses.",
+      "url": "/Dashboard/Expenses",
+      "icons": [
+        {
+          "src": "images/icons/shortcuts/expenses.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

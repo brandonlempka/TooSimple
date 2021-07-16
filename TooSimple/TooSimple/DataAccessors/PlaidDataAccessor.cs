@@ -20,7 +20,7 @@ namespace TooSimple.DataAccessors
         private AppSettings _appSettings;
         private string _language = "en";
         private string[] _countries = new string[] { "US" };
-        private string[] _products = new string[] { "auth", "transactions", };
+        private string[] _products = new string[] { "auth", "transactions", "liabilities" };
         private string _clientName = "Too Simple";
         private string[] _debit_account_filters = new string[] { "checking", "savings", "hsa" };
         private string[] _credit_account_filters = new string[] { "credit card" };
@@ -46,17 +46,17 @@ namespace TooSimple.DataAccessors
                     client_user_id = userId
                 },
 
-                account_filters = new AccountFiltersDM
-                {
-                    depository = new DepositoryDM
-                    {
-                        account_subtypes = _debit_account_filters
-                    },
-                    credit = new CreditDM
-                    {
-                        account_subtypes = _credit_account_filters
-                    }
-                }
+                //account_filters = new AccountFiltersDM
+                //{
+                //    depository = new DepositoryDM
+                //    {
+                //        account_subtypes = _debit_account_filters
+                //    },
+                //    credit = new CreditDM
+                //    {
+                //        account_subtypes = _credit_account_filters
+                //    }
+                //}
             };
 
             var requestJson = JsonConvert.SerializeObject(dataModel);
