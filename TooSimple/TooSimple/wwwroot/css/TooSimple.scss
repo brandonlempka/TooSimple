@@ -16,7 +16,7 @@ a {
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
+    background-color: #3f48cc;
     border-color: #1861ac;
 }
 
@@ -80,15 +80,32 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-    body, nav {
+    body {
         background-color: #303030 !important;
         color: white;
+    }
+
+    nav {
+        background-color: #666;
+    }
+
+    footer {
+        background-color: #666;
     }
 
     table {
         color: white !important;
     }
 
+}
+
+.navbar-brand {
+    margin-right: auto;
+    margin-left: auto;
+
+    img {
+        margin-left: 50px;
+    }
 }
 
 .pagerContainer {

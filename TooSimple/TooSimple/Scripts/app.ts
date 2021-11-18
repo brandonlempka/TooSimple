@@ -42,3 +42,50 @@ function updatePlaidAccounts() {
         }
     })
 }
+
+//Checks device theme for dark mode
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    updateDarkMode(true);
+}
+
+//watches for changes in device theme
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    const newColorScheme: boolean = e.matches ? true : false;
+    updateDarkMode(newColorScheme);
+});
+
+//Updates dark mode nav header & links
+function updateDarkMode(darkMode: boolean) {
+    const nav = $('nav');
+    const headerLinks = $('.nav-link')
+
+    const footer = $('footer');
+    const footerLinks = footer.find('a');
+
+    if (darkMode) {
+        nav.removeClass('bg-white');
+        nav.removeClass('box-shadow');
+        nav.removeClass('border-bottom');
+
+        headerLinks.removeClass('text-dark');
+        headerLinks.addClass('text-light');
+
+        footer.removeClass('text-muted');
+        footer.removeClass('border-top');
+        footerLinks.removeClass('text-dark');
+        footerLinks.addClass('text-light');
+    } else {
+        nav.addClass('bg-white');
+        nav.addClass('box-shadow');
+        nav.addClass('border-bottom');
+
+        headerLinks.addClass('text-dark');
+        headerLinks.removeClass('text-light');
+
+        footer.addClass('text-muted');
+        footer.addClass('border-top');
+
+        footerLinks.addClass('text-dark');
+        footerLinks.removeClass('text-light');
+    }
+}

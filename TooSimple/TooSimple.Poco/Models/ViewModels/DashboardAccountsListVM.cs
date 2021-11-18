@@ -11,6 +11,7 @@ namespace TooSimple.Poco.Models.ViewModels
         public decimal? CurrentBalance { get; set; }
         public decimal? AvailableBalance { get; set; }
         public DateTime? LastUpdated { get; set; }
+        public string LastUpdatedDisplayValue { get; set; }
         public string UserAccountId { get; set; }
         public string Name { get; set; }
         public string NickName { get; set; }

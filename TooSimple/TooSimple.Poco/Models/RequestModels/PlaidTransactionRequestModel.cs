@@ -16,8 +16,8 @@ namespace TooSimple.Poco.Models.RequestModels
 
         public PlaidTransactionRequestModel()
         {
-            StartDate = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
-            EndDate = DateTime.Now.ToString("yyyy-MM-dd");
+            StartDate = DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd");
+            EndDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
             Offset = 0;
             Count = 300;
         }

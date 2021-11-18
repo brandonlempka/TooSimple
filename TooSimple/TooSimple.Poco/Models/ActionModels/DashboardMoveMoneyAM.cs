@@ -17,7 +17,7 @@ namespace TooSimple.Poco.Models.ActionModels
         public DashboardMoveMoneyAM()
         {
             AutomatedTransfer = false;
-            TransferDate = DateTime.Now;
+            TransferDate = DateTime.UtcNow;
         }
     }
 }

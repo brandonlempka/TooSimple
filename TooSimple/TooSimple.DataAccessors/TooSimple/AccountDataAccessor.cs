@@ -190,7 +190,7 @@ namespace TooSimple.DataAccessors.TooSimple
                             Mask = account.Mask,
                             Name = account.Name,
                             AccountId = account.AccountId,
-                            LastUpdated = DateTime.Now,
+                            LastUpdated = DateTime.UtcNow,
                             UseForBudgeting = true
                         });
 
@@ -200,7 +200,7 @@ namespace TooSimple.DataAccessors.TooSimple
                     {
                         existingAccount.CurrentBalance = account.CurrentBalance;
                         existingAccount.AvailableBalance = account.AvailableBalance;
-                        existingAccount.LastUpdated = DateTime.Now;
+                        existingAccount.LastUpdated = DateTime.UtcNow;
 
                         await _db.SaveChangesAsync();
                     }

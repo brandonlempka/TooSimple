@@ -10,6 +10,9 @@
     <thead>
         <tr>
             <th>Account Name</th>
+            <th>Current Balance</th>
+            <th>Available Balance</th>
+            <th>Last Updated</th>
             <th>Edit</th>
             <th>Delete</th>
         </tr>
@@ -25,6 +28,15 @@
                         <span class="material-icons text-warning">login</span>
                     </div>
                 }
+            </td>
+            <td>
+                @(account.CurrentBalance.HasValue ? account.CurrentBalance.Value.ToString("c") : "-")
+            </td>
+            <td>
+                @(account.AvailableBalance.HasValue ? account.AvailableBalance.Value.ToString("c") : "-")
+            </td>
+            <td>
+                @account.LastUpdatedDisplayValue
             </td>
             <td>
                 <a href="~/Dashboard/LoadAccount?id=@account.AccountId"><span class="material-icons">mode_edit</span></a>

@@ -22,7 +22,7 @@ namespace TooSimple.Poco.Models.ActionModels
 
         public DashboardSaveGoalAM()
         {
-            CreationDate = DateTime.Now;
+            CreationDate = DateTime.UtcNow;
             AutoRefill = true;
         }
     }

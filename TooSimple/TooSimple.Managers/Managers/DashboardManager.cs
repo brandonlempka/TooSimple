@@ -67,7 +67,7 @@ namespace TooSimple.Managers.Managers
                 CurrencyCode = x.balances.iso_currency_code,
                 Mask = x.mask,
                 Name = x.name,
-                LastUpdated = DateTime.Now,
+                LastUpdated = DateTime.UtcNow,
                 Transactions = Enumerable.Empty<TransactionDM>()
             });
 
@@ -154,7 +154,7 @@ namespace TooSimple.Managers.Managers
 
             var responseList = new List<StatusRM>();
 
-            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.Now.AddMinutes(-15) && !a.ReLoginRequired);
+            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.UtcNow.AddMinutes(-15) && !a.ReLoginRequired);
 
             //if (outdatedAccounts.Any())
             //{
@@ -186,7 +186,7 @@ namespace TooSimple.Managers.Managers
 
             if (goals.Goals.Any())
             {
-                await UpdateGoalFunding(userId, DateTime.Now);
+                await UpdateGoalFunding(userId, DateTime.UtcNow);
             }
 
             //foreach (var tran in transactionList.EmptyIfNull())
@@ -213,7 +213,7 @@ namespace TooSimple.Managers.Managers
                 CurrentBalance = currentBalance,
                 AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
                 TransactionTableVM = await GetTransactionTableVMAsync(currentUser, 1),
-                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToString("MM/dd/yyyy hh:mm")
+                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt")
             };
 
             if (currentBalance < 0)
@@ -347,7 +347,7 @@ namespace TooSimple.Managers.Managers
                 return StatusRM.CreateError(genericError);
             }
 
-            var defaultTransactionsStart = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd");
+            var defaultTransactionsStart = DateTime.UtcNow.AddDays(-90).ToString("yyyy-MM-dd");
             var refreshResponse = await UpdateAccountDbAsync(userId, responseModel.Access_token, accountIds, defaultTransactionsStart);
 
             return refreshResponse;
@@ -414,7 +414,8 @@ namespace TooSimple.Managers.Managers
                     CurrentBalance = account.CurrentBalance,
                     UserAccountId = account.UserAccountId,
                     CurrencyCode = account.CurrencyCode,
-                    LastUpdated = account.LastUpdated,
+                    LastUpdated = account.LastUpdated?.ToLocalTime(),
+                    LastUpdatedDisplayValue = account.LastUpdated?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt"),
                     Name = account.Name,
                     NickName = account.NickName ?? account.Name,
                     ReLoginRequired = account.ReLoginRequired
@@ -437,7 +438,7 @@ namespace TooSimple.Managers.Managers
                 publicToken = responseModel.Link_Token;
             }
 
-            return new DashboardEditAccountVM
+            var viewModel = new DashboardEditAccountVM
             {
                 AccountId = account.AccountId,
                 NickName = account.NickName ?? account.Name,
@@ -447,7 +448,7 @@ namespace TooSimple.Managers.Managers
                 CurrentBalanceDisplayValue = account.CurrentBalance?.ToString("c") ?? "$0.00",
                 AvailableBalanceDisplayValue = account.AvailableBalance?.ToString("c") ?? "$0.00",
                 CurrencyCode = account.CurrencyCode,
-                LastUpdated = account.LastUpdated?.ToString("MM/dd/yyyy hh:mm"),
+                LastUpdated = account.LastUpdated?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt"),
                 Mask = account.Mask,
                 Name = account.Name,
                 UseForBudgeting = account.UseForBudgeting,
@@ -456,6 +457,8 @@ namespace TooSimple.Managers.Managers
                 RelogRequired = account.ReLoginRequired,
                 PublicToken = publicToken
             };
+
+            return viewModel;
         }
 
         public async Task<StatusRM> UpdateAccountAsync(DashboardSaveAccountAM actionModel)
@@ -491,7 +494,7 @@ namespace TooSimple.Managers.Managers
                     ProgressPercent = x.AmountContributed == 0 ? "0%"
                         : (((x.AmountContributed - x.AmountSpent) / x.GoalAmount) * 100).ToString() + "%",
                     NextContributionAmount = x.NextContributionAmount.ToString("c"),
-                    NextContributionDate = x.NextContributionDate.ToString("MM/dd")
+                    NextContributionDate = x.NextContributionDate.ToLocalTime().ToString("MM/dd")
                 }).OrderBy(g => g.GoalName)
             };
 
@@ -611,8 +614,8 @@ namespace TooSimple.Managers.Managers
                 ToAccount = f.ToAccountName ?? "Ready to Spend",
                 FundingHistoryId = f.FundingHistoryId,
                 Note = f.Note,
-                TransferDate = f.TransferDate
-            }).OrderByDescending(f => f.TransferDate).ToList();
+                TransferDate = f.TransferDate.ToLocalTime()
+            }).OrderByDescending(f => f.TransferDate.ToLocalTime()).ToList();
 
             return viewModel;
         }
@@ -649,7 +652,7 @@ namespace TooSimple.Managers.Managers
             {
                 if (schedule.FundingScheduleId == actionModel.FundingScheduleId)
                 {
-                    nextContribution = CalculateNextContribution(dataModel, schedule, DateTime.Now);
+                    nextContribution = CalculateNextContribution(dataModel, schedule, DateTime.UtcNow);
                 }
             }
 
@@ -684,7 +687,7 @@ namespace TooSimple.Managers.Managers
                 City = dataModel.City,
                 Country = dataModel.Country,
                 CurrencyCode = dataModel.CurrencyCode,
-                TransactionDate = dataModel.TransactionDate,
+                TransactionDate = dataModel.TransactionDate?.ToLocalTime(),
                 InternalCategory = dataModel.InternalCategory,
                 MerchantName = !string.IsNullOrWhiteSpace(dataModel.MerchantName) ? dataModel.MerchantName : "-",
                 Name = dataModel.Name,
@@ -760,7 +763,7 @@ namespace TooSimple.Managers.Managers
                 ToAccountId = toGoal,
                 UserAccountId = responseModel.UserAccountId,
                 Note = "Automated: Spending from transaction",
-                TransferDate = DateTime.Now
+                TransferDate = DateTime.UtcNow
             };
 
             return await SaveMoveMoneyAsync(moveMoneyModel);
@@ -776,7 +779,7 @@ namespace TooSimple.Managers.Managers
                 FundingSchedules = dataModel.FundingSchedules.Select(schedule => new DashboardFundingScheduleVM
                 {
                     UserAccountId = schedule.UserAccountId,
-                    FirstContributionDate = schedule.FirstContributionDate,
+                    FirstContributionDate = schedule.FirstContributionDate.ToLocalTime(),
                     Frequency = schedule.Frequency,
                     FundingScheduleId = schedule.FundingScheduleId,
                     FundingScheduleName = schedule.FundingScheduleName
@@ -816,7 +819,7 @@ namespace TooSimple.Managers.Managers
             var viewModel = new DashboardFundingScheduleVM
             {
                 UserAccountId = dataModel.UserAccountId,
-                FirstContributionDate = dataModel.FirstContributionDate,
+                FirstContributionDate = dataModel.FirstContributionDate.ToLocalTime(),
                 Frequency = dataModel.Frequency,
                 FundingScheduleId = dataModel.FundingScheduleId,
                 FundingScheduleName = dataModel.FundingScheduleName,
@@ -912,7 +915,7 @@ namespace TooSimple.Managers.Managers
                     //set next contribution to null value to re-calculate
                     fromGoal.NextContributionDate = Convert.ToDateTime("0001-01-01 00:00:00");
 
-                    var nextContribution = CalculateNextContribution(fromGoal, fromSchedule, DateTime.Now);
+                    var nextContribution = CalculateNextContribution(fromGoal, fromSchedule, DateTime.UtcNow);
 
                     fromGoal.NextContributionAmount = nextContribution.NextContributionAmount;
                     fromGoal.NextContributionDate = nextContribution.NextContributionDate;
@@ -927,7 +930,7 @@ namespace TooSimple.Managers.Managers
                     //set next contribution to null value to re-calculate
                     toGoal.NextContributionDate = Convert.ToDateTime("0001-01-01 00:00:00");
 
-                    var nextContribution = CalculateNextContribution(toGoal, toSchedule, DateTime.Now);
+                    var nextContribution = CalculateNextContribution(toGoal, toSchedule, DateTime.UtcNow);
 
                     toGoal.NextContributionAmount = nextContribution.NextContributionAmount;
                     toGoal.NextContributionDate = nextContribution.NextContributionDate;

@@ -2,44 +2,51 @@
 
 <h1 class="mb-4">@Model.Name</h1>
 
-<div class="col-sm-4">
-    <div class="row">
+<div class="form-row">
+    <div class="form-group col-sm-4">
         @Html.LabelFor(m => m.Name, "Transaction Name")
-    </div>
-    <div class="row">
+        <br />
         @Model.Name
     </div>
-    <div class="row">
+</div>
+
+<div class="form-row">
+    <div class="form-group col-sm-4">
         @Html.LabelFor(m => m.Name, "Merchant Name")
-    </div>
-    <div class="row">
+        <br />
         @Model.MerchantName
     </div>
-    <div class="row">
+</div>
+
+<div class="form-row">
+    <div class="form-group col-sm-4">
         @Html.LabelFor(m => m.Name, "Amount")
-    </div>
-    <div class="row">
+        <br />
         @Model.Amount.ToString("c")
     </div>
-    <div class="row">
+</div>
+
+<div class="form-row">
+    <div class="form-group col-sm-4">
         @Html.LabelFor(m => m.AccountName, "Spent from")
-    </div>
-    <div class="row">
+        <br />
         @Model.AccountName
     </div>
-
-    <form id="editTransactionForm" action="~/Dashboard/SaveTransaction" method="post" class="mt-3">
-        @Html.HiddenFor(m => m.TransactionId)
-        @Html.HiddenFor(m => m.AccountId)
-        @Html.HiddenFor(m => m.UserAccountId)
-
-        <div class="row">
-            @Html.LabelFor(m => m.SpendingFromId, "Spending From", new { @class = "form-check-label" })
-            @Html.DropDownListFor(m => m.SpendingFromId, Model.Goals, new { @class = "form-control" })
-        </div>
-        
-        <div class="row mt-2">
-            <button id="btnSaveTransaction" class="btn btn-primary">Save</button>
-        </div>
-    </form>
 </div>
+
+<form id="editTransactionForm" action="~/Dashboard/SaveTransaction" method="post" class="mt-3">
+    @Html.HiddenFor(m => m.TransactionId)
+    @Html.HiddenFor(m => m.AccountId)
+    @Html.HiddenFor(m => m.UserAccountId)
+
+    <div class="form-row">
+        <div class="form-btn-group col-sm-6">
+             @Html.LabelFor(m => m.SpendingFromId, "Spending From", new { @class = "form-check-label" })
+             @Html.DropDownListFor(m => m.SpendingFromId, Model.Goals, new { @class = "form-control" })
+        </div>
+    </div>
+
+    <div class="form-row mt-3">
+        <button id="btnSaveTransaction" class="btn btn-primary">Save</button>
+    </div>
+</form>

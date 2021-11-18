@@ -51,8 +51,8 @@ namespace TooSimple.Poco.Models.ViewModels
             Region = x.Region;
             SpendingFrom = x.SpendingFrom ?? "Ready to Spend";
             TransactionCode = x.TransactionCode;
-            TransactionDate = x.TransactionDate;
-            TransactionDateDisplayValue = x.TransactionDate?.ToString("MM/dd/yyyy");
+            TransactionDate = x.TransactionDate?.ToLocalTime();
+            TransactionDateDisplayValue = x.TransactionDate?.ToLocalTime().ToString("MM/dd/yyyy");
             TransactionId = x.TransactionId;
         }
     }

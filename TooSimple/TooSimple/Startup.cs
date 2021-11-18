@@ -17,6 +17,7 @@ using TooSimple.Poco.Models.Settings;
 using TooSimple.DataAccessors.Data;
 using TooSimple.DataAccessors.Plaid;
 using TooSimple.DataAccessors.TooSimple;
+using WebEssentials.AspNetCore.Pwa;
 
 namespace TooSimple
 {
@@ -83,7 +84,15 @@ namespace TooSimple
                 options.SlidingExpiration = true;
             });
 
+            //more advanced pwa options
+            //services.AddProgressiveWebApp(new PwaOptions
+            //{
+            //    CacheId = "v2",
+            //    Strategy = ServiceWorkerStrategy.NetworkFirst
+            //});
+
             services.AddProgressiveWebApp();
+
             services.AddAuthentication()
                 .AddGoogle(options =>
                 {
