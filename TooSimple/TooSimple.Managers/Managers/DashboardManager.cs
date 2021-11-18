@@ -607,8 +607,8 @@ namespace TooSimple.Managers.Managers
             {
                 Amount = f.Amount,
                 AutomatedTransfer = f.AutomatedTransfer,
-                FromAccount = f.FromAccountId ?? "Ready to Spend",
-                ToAccount = f.ToAccountId ?? "Ready to Spend",
+                FromAccount = f.FromAccountName ?? "Ready to Spend",
+                ToAccount = f.ToAccountName ?? "Ready to Spend",
                 FundingHistoryId = f.FundingHistoryId,
                 Note = f.Note,
                 TransferDate = f.TransferDate
@@ -676,6 +676,7 @@ namespace TooSimple.Managers.Managers
             {
                 Goals = new List<SelectListItem>(),
                 AccountId = dataModel.AccountId,
+                AccountName = dataModel.Name,
                 AccountOwner = dataModel.AccountOwner,
                 Address = dataModel.Address,
                 Amount = dataModel.Amount.GetValueOrDefault(),
@@ -685,7 +686,7 @@ namespace TooSimple.Managers.Managers
                 CurrencyCode = dataModel.CurrencyCode,
                 TransactionDate = dataModel.TransactionDate,
                 InternalCategory = dataModel.InternalCategory,
-                MerchantName = dataModel.MerchantName,
+                MerchantName = !string.IsNullOrWhiteSpace(dataModel.MerchantName) ? dataModel.MerchantName : "-",
                 Name = dataModel.Name,
                 Pending = dataModel.Pending,
                 TransactionId = dataModel.TransactionId,
@@ -694,9 +695,9 @@ namespace TooSimple.Managers.Managers
             if (goals.Goals.Any())
             {
 
-                viewModel.Goals = goals.Goals.Select(goal => new SelectListItem
+                viewModel.Goals = goals.Goals.EmptyIfNull().OrderBy(x => x.GoalName).Select(goal => new SelectListItem
                 {
-                    Text = goal.GoalName,
+                    Text = $"{goal.GoalName} - {(goal.AmountContributed - goal.AmountSpent).ToString("c")}",
                     Value = goal.GoalId,
                 }).ToList();
 
@@ -758,7 +759,7 @@ namespace TooSimple.Managers.Managers
                 FromAccountId = fromGoal,
                 ToAccountId = toGoal,
                 UserAccountId = responseModel.UserAccountId,
-                Note = "",
+                Note = "Automated: Spending from transaction",
                 TransferDate = DateTime.Now
             };
 
@@ -868,9 +869,9 @@ namespace TooSimple.Managers.Managers
                 UserAccountId = userId
             };
 
-            viewModel.AccountsList = goalsList.Goals.EmptyIfNull().Select(goal => new SelectListItem
+            viewModel.AccountsList = goalsList.Goals.EmptyIfNull().OrderBy(x => x.GoalName).Select(goal => new SelectListItem
             {
-                Text = goal.GoalName,
+                Text = $"{goal.GoalName} - {(goal.AmountContributed - goal.AmountSpent).ToString("c")}",
                 Value = goal.GoalId,
                 Selected = false
             }).ToList();

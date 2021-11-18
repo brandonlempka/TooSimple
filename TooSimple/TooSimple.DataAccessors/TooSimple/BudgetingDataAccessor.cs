@@ -355,8 +355,10 @@ namespace TooSimple.DataAccessors.TooSimple
                                    {
                                        Amount = history.Amount,
                                        AutomatedTransfer = history.AutomatedTransfer,
-                                       FromAccountId = x.GoalName,
-                                       ToAccountId = y.GoalName,
+                                       FromAccountId = y.GoalId,
+                                       FromAccountName = y.GoalName,
+                                       ToAccountId = x.GoalId,
+                                       ToAccountName = x.GoalName,
                                        FundingHistoryId = history.FundingHistoryId,
                                        Note = history.Note,
                                        TransferDate = history.TransferDate

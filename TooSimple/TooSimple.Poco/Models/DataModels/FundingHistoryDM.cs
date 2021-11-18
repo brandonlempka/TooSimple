@@ -9,7 +9,9 @@ namespace TooSimple.Poco.Models.DataModels
     {
         public string FundingHistoryId { get; set; }
         public string FromAccountId { get; set; }
+        public string FromAccountName { get; set; }
         public string ToAccountId { get; set; }
+        public string ToAccountName { get; set; }
         public decimal Amount { get; set; }
         public DateTime TransferDate { get; set; }
         public string Note { get; set; }

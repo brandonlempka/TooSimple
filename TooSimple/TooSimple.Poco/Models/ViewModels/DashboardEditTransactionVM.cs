@@ -10,6 +10,7 @@ namespace TooSimple.Poco.Models.ViewModels
     {
         public string TransactionId { get; set; }
         public string AccountId { get; set; }
+        public string AccountName { get; set; }
         public string AccountOwner { get; set; }
         public decimal Amount { get; set; }
         public DateTime? AuthorizedDate { get; set; }
