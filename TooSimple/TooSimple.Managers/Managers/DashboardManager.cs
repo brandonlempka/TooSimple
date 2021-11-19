@@ -16,6 +16,7 @@ using TooSimple.Poco.Models.RequestModels;
 using TooSimple.Poco.Models.ResponseModels;
 using TooSimple.Poco.Models.ResponseModels.Plaid;
 using TooSimple.Poco.Models.ViewModels;
+using TooSimple.Poco.Extensions;
 
 namespace TooSimple.Managers.Managers
 {
@@ -213,7 +214,7 @@ namespace TooSimple.Managers.Managers
                 CurrentBalance = currentBalance,
                 AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
                 TransactionTableVM = await GetTransactionTableVMAsync(currentUser, 1),
-                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt")
+                LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.DateToCentral().ToString("MM/dd/yyyy hh:mm tt")
             };
 
             if (currentBalance < 0)
@@ -414,8 +415,8 @@ namespace TooSimple.Managers.Managers
                     CurrentBalance = account.CurrentBalance,
                     UserAccountId = account.UserAccountId,
                     CurrencyCode = account.CurrencyCode,
-                    LastUpdated = account.LastUpdated?.ToLocalTime(),
-                    LastUpdatedDisplayValue = account.LastUpdated?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt"),
+                    LastUpdated = account.LastUpdated?.DateToCentral(),
+                    LastUpdatedDisplayValue = account.LastUpdated?.DateToCentral().ToString("MM/dd/yyyy hh:mm tt"),
                     Name = account.Name,
                     NickName = account.NickName ?? account.Name,
                     ReLoginRequired = account.ReLoginRequired
@@ -448,7 +449,7 @@ namespace TooSimple.Managers.Managers
                 CurrentBalanceDisplayValue = account.CurrentBalance?.ToString("c") ?? "$0.00",
                 AvailableBalanceDisplayValue = account.AvailableBalance?.ToString("c") ?? "$0.00",
                 CurrencyCode = account.CurrencyCode,
-                LastUpdated = account.LastUpdated?.ToLocalTime().ToString("MM/dd/yyyy hh:mm tt"),
+                LastUpdated = account.LastUpdated?.DateToCentral().ToString("MM/dd/yyyy hh:mm tt"),
                 Mask = account.Mask,
                 Name = account.Name,
                 UseForBudgeting = account.UseForBudgeting,
@@ -494,7 +495,7 @@ namespace TooSimple.Managers.Managers
                     ProgressPercent = x.AmountContributed == 0 ? "0%"
                         : (((x.AmountContributed - x.AmountSpent) / x.GoalAmount) * 100).ToString() + "%",
                     NextContributionAmount = x.NextContributionAmount.ToString("c"),
-                    NextContributionDate = x.NextContributionDate.ToLocalTime().ToString("MM/dd")
+                    NextContributionDate = x.NextContributionDate.DateToCentral().ToString("MM/dd")
                 }).OrderBy(g => g.GoalName)
             };
 
@@ -614,8 +615,8 @@ namespace TooSimple.Managers.Managers
                 ToAccount = f.ToAccountName ?? "Ready to Spend",
                 FundingHistoryId = f.FundingHistoryId,
                 Note = f.Note,
-                TransferDate = f.TransferDate.ToLocalTime()
-            }).OrderByDescending(f => f.TransferDate.ToLocalTime()).ToList();
+                TransferDate = f.TransferDate.DateToCentral()
+            }).OrderByDescending(f => f.TransferDate.DateToCentral()).ToList();
 
             return viewModel;
         }
@@ -687,7 +688,7 @@ namespace TooSimple.Managers.Managers
                 City = dataModel.City,
                 Country = dataModel.Country,
                 CurrencyCode = dataModel.CurrencyCode,
-                TransactionDate = dataModel.TransactionDate?.ToLocalTime(),
+                TransactionDate = dataModel.TransactionDate?.DateToCentral(),
                 InternalCategory = dataModel.InternalCategory,
                 MerchantName = !string.IsNullOrWhiteSpace(dataModel.MerchantName) ? dataModel.MerchantName : "-",
                 Name = dataModel.Name,
@@ -779,7 +780,7 @@ namespace TooSimple.Managers.Managers
                 FundingSchedules = dataModel.FundingSchedules.Select(schedule => new DashboardFundingScheduleVM
                 {
                     UserAccountId = schedule.UserAccountId,
-                    FirstContributionDate = schedule.FirstContributionDate.ToLocalTime(),
+                    FirstContributionDate = schedule.FirstContributionDate.DateToCentral(),
                     Frequency = schedule.Frequency,
                     FundingScheduleId = schedule.FundingScheduleId,
                     FundingScheduleName = schedule.FundingScheduleName
@@ -819,7 +820,7 @@ namespace TooSimple.Managers.Managers
             var viewModel = new DashboardFundingScheduleVM
             {
                 UserAccountId = dataModel.UserAccountId,
-                FirstContributionDate = dataModel.FirstContributionDate.ToLocalTime(),
+                FirstContributionDate = dataModel.FirstContributionDate.DateToCentral(),
                 Frequency = dataModel.Frequency,
                 FundingScheduleId = dataModel.FundingScheduleId,
                 FundingScheduleName = dataModel.FundingScheduleName,
