@@ -17,6 +17,7 @@ using TooSimple.Poco.Models.ResponseModels;
 using TooSimple.Poco.Models.ResponseModels.Plaid;
 using TooSimple.Poco.Models.ViewModels;
 using TooSimple.Poco.Extensions;
+using TooSimple.Poco.Enum;
 
 namespace TooSimple.Managers.Managers
 {
@@ -61,6 +62,8 @@ namespace TooSimple.Managers.Managers
             var plaidAccount = account.accounts.Select(x => new AccountDM
             {
                 AccessToken = accessToken,
+                //fix this to be able to be 0/unknown
+                AccountTypeId = (AccountType)(x.subtype == "checking" ? 1 : 2),
                 UserAccountId = userId,
                 AvailableBalance = x.balances.available,
                 CurrentBalance = x.balances.current,

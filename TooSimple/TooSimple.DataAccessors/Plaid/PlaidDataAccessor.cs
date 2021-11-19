@@ -25,7 +25,7 @@ namespace TooSimple.DataAccessors.Plaid
         //private string[] _products = new string[] { "auth", "transactions", };
         private string _clientName = "Too Simple";
         private string[] _debit_account_filters = new string[] { "checking", "savings", "hsa" };
-        //private string[] _credit_account_filters = new string[] { "credit card" };
+        private string[] _credit_account_filters = new string[] { "credit card" };
 
         public PlaidDataAccessor(IOptions<AppSettings> appSettings)
         {
@@ -54,10 +54,10 @@ namespace TooSimple.DataAccessors.Plaid
                     {
                         account_subtypes = _debit_account_filters
                     },
-                    //credit = new CreditDM
-                    //{
-                    //    account_subtypes = _credit_account_filters
-                    //}
+                    credit = new CreditDM
+                    {
+                        account_subtypes = _credit_account_filters
+                    }
                 }
             };
 

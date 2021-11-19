@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TooSimple.DataAccessors.Data;
 using TooSimple.Managers.Extensions;
 using TooSimple.Models.ActionModels;
+using TooSimple.Poco.Enum;
 using TooSimple.Poco.Models.DataModels;
 using TooSimple.Poco.Models.EFModels;
 using TooSimple.Poco.Models.RequestModels;
@@ -334,10 +335,12 @@ namespace TooSimple.DataAccessors.TooSimple
         {
 
             var goalDM = await GetGoalListDMAsync(userAccountId);
-            var accountSum = accountsDM.Accounts.EmptyIfNull().Select(x => x.CurrentBalance).Sum();
+            var accountSum = accountsDM.Accounts.EmptyIfNull().Where(y => y.AccountTypeId == AccountType.Checking).Select(x => x.CurrentBalance).Sum();
+            var creditAccountSum = accountsDM.Accounts.EmptyIfNull().Where(y => y.AccountTypeId == AccountType.CreditCard).Select(x => x.CurrentBalance).Sum();
             var goalsSum = goalDM.Goals.EmptyIfNull().Select(x => x.AmountContributed).Sum();
 
             accountSum -= goalsSum;
+            accountSum -= creditAccountSum;
             return accountSum;
         }
 

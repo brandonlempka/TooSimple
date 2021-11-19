@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TooSimple.DataAccessors.Data;
+using TooSimple.Poco.Enum;
 using TooSimple.Poco.Models.ActionModels;
 using TooSimple.Poco.Models.DataModels;
 using TooSimple.Poco.Models.EFModels;
@@ -39,7 +40,7 @@ namespace TooSimple.DataAccessors.TooSimple
                                    {
                                        AccessToken = x.AccessToken,
                                        AccountId = x.AccountId,
-                                       AccountTypeId = x.AccountTypeId,
+                                       AccountTypeId = (AccountType)x.AccountTypeId,
                                        AvailableBalance = x.AvailableBalance,
                                        UserAccountId = x.UserAccountId,
                                        CurrencyCode = x.CurrencyCode,
@@ -86,7 +87,7 @@ namespace TooSimple.DataAccessors.TooSimple
                 {
                     AccessToken = x.AccessToken,
                     AccountId = x.AccountId,
-                    AccountTypeId = x.AccountTypeId,
+                    AccountTypeId = (AccountType)x.AccountTypeId,
                     AvailableBalance = x.AvailableBalance,
                     UserAccountId = x.UserAccountId,
                     CurrencyCode = x.CurrencyCode,
@@ -184,6 +185,7 @@ namespace TooSimple.DataAccessors.TooSimple
                         {
                             AccessToken = account.AccessToken,
                             AvailableBalance = account.AvailableBalance,
+                            AccountTypeId = (int)account.AccountTypeId,
                             UserAccountId = account.UserAccountId,
                             CurrencyCode = account.CurrencyCode,
                             CurrentBalance = account.CurrentBalance,

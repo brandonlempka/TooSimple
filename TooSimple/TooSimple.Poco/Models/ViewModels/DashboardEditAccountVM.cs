@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TooSimple.Poco.Enum;
 
 namespace TooSimple.Poco.Models.ViewModels
 {
     public class DashboardEditAccountVM
     {
         public string AccountId { get; set; }
-        public int AccountTypeId { get; set; }
+        public AccountType AccountTypeId { get; set; }
         public string LastUpdated { get; set; }
         public string Mask { get; set; }
         public string Name { get; set; }
