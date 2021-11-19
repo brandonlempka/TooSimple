@@ -9,6 +9,7 @@ namespace TooSimple.Models.EFModels
     public class Account
     {
         public string AccountId { get; set; }
+        [ForeignKey("AccountType")]
         public int AccountTypeId { get; set; }
         public string UserAccountId { get; set; }
         public string Mask { get; set; }
