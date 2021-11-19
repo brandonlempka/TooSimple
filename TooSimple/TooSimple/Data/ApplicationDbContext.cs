@@ -24,6 +24,7 @@ namespace TooSimple.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>().ToTable("Account");
+            modelBuilder.Entity<AccountType>().ToTable("AccountType");
             modelBuilder.Entity<FundingSchedule>().ToTable("FundingSchedule");
             modelBuilder.Entity<Goal>().ToTable("Goal");
             modelBuilder.Entity<Transaction>().ToTable("Transaction");
