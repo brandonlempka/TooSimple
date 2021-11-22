@@ -182,10 +182,9 @@ namespace TooSimple.Managers.Managers
 
             foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
             {
-                var transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x, account.Name)).ToList();
+                var transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x)).ToList();
 
                 transactionList.AddRange(transactions);
-
             }
 
             if (goals.Goals.Any())
@@ -271,13 +270,15 @@ namespace TooSimple.Managers.Managers
         public async Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser)
         {
             var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
+            var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId); 
+            var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.UtcNow.AddMinutes(-15) && !a.ReLoginRequired);
+            
             var responseList = new List<StatusRM>();
-            var accountGroup = dataModel.Accounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
+            var accountGroup = outdatedAccounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
                 x => x.AccountId,
                 (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
 
-            var lastUpdated = dataModel.Accounts.Min(a => a.LastUpdated);
+            var lastUpdated = outdatedAccounts.Min(a => a.LastUpdated);
             var lastUpdatedString = lastUpdated?.ToString("yyyy-MM-dd");
 
             foreach (var token in accountGroup)
@@ -291,9 +292,9 @@ namespace TooSimple.Managers.Managers
 
             var transactionList = new List<TransactionListVM>();
 
-            foreach (var account in dataModel.Accounts.Where(a => a.UseForBudgeting))
+            foreach (var account in outdatedAccounts.Where(a => a.UseForBudgeting))
             {
-                var transaction = account.Transactions.EmptyIfNull().Where(t => t.TransactionDate > lastUpdated).Select(x => new TransactionListVM(x, account.Name));
+                var transaction = account.Transactions.EmptyIfNull().Where(t => t.TransactionDate > lastUpdated).Select(x => new TransactionListVM(x));
 
                 transactionList.AddRange(transaction);
 
@@ -456,7 +457,7 @@ namespace TooSimple.Managers.Managers
                 Mask = account.Mask,
                 Name = account.Name,
                 UseForBudgeting = account.UseForBudgeting,
-                Transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x, account.NickName ?? account.Name))
+                Transactions = account.Transactions.EmptyIfNull().Select(x => new TransactionListVM(x))
                     .OrderByDescending(t => t.TransactionDate),
                 RelogRequired = account.ReLoginRequired,
                 PublicToken = publicToken
@@ -683,7 +684,7 @@ namespace TooSimple.Managers.Managers
             {
                 Goals = new List<SelectListItem>(),
                 AccountId = dataModel.AccountId,
-                AccountName = dataModel.Name,
+                AccountName = dataModel.AccountName,
                 AccountOwner = dataModel.AccountOwner,
                 Address = dataModel.Address,
                 Amount = dataModel.Amount.GetValueOrDefault(),

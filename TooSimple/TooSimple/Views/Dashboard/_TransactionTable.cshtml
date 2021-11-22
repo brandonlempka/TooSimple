@@ -6,6 +6,7 @@
                 <th>Date</th>
                 <th>Description</th>
                 <th>Amount</th>
+                <th class="extraColumns"">Account</th>
                 <th>Spent From</th>
             </tr>
         </thead>
@@ -29,6 +30,9 @@
                     <span style="color:@transaction.AmountDisplayColor">
                         @transaction.AmountDisplayValue
                     </span>
+                </td>
+                <td class="extraColumns">
+                    @transaction.AccountName
                 </td>
                 <td>
                     @transaction.SpendingFrom

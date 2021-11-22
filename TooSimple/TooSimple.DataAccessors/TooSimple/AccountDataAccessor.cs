@@ -139,6 +139,7 @@ namespace TooSimple.DataAccessors.TooSimple
             {
                 Transactions = (
                                from transaction in _db.Transactions
+                               join account in _db.Accounts on transaction.AccountId equals account.AccountId
                                join goal in _db.Goals on transaction.SpendingFrom equals goal.GoalId into init
                                from x in init.DefaultIfEmpty()
                                where transaction.UserAccountId == userId
@@ -146,6 +147,7 @@ namespace TooSimple.DataAccessors.TooSimple
                                select new TransactionDM
                                {
                                    AccountId = transaction.AccountId,
+                                   AccountName = account.NickName ?? account.Name,
                                    AccountOwner = transaction.AccountOwner,
                                    Address = transaction.Address,
                                    Amount = transaction.Amount,
@@ -436,6 +438,7 @@ namespace TooSimple.DataAccessors.TooSimple
                                {
                                    AccountId = tran.AccountId,
                                    AccountOwner = tran.AccountOwner,
+                                   AccountName = account.NickName ?? account.Name,
                                    Address = tran.Address,
                                    Amount = tran.Amount,
                                    UserAccountId = tran.UserAccountId,
@@ -463,14 +466,15 @@ namespace TooSimple.DataAccessors.TooSimple
         public async Task<TransactionDM> GetTransactionDMAsync(string transactionId)
         {
             var transaction = await _db.Transactions.FirstOrDefaultAsync(tran => tran.TransactionId == transactionId);
+            var account = await _db.Accounts.FirstOrDefaultAsync(account => account.AccountId == transaction.AccountId);
 
             if (transaction == null)
                 return new TransactionDM();
 
             return new TransactionDM
             {
-
                 AccountId = transaction.AccountId,
+                AccountName = account.NickName ?? account.Name,
                 AccountOwner = transaction.AccountOwner,
                 Address = transaction.Address,
                 Amount = transaction.Amount,

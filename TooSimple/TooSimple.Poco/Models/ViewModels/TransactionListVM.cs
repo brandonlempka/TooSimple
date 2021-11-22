@@ -31,11 +31,11 @@ namespace TooSimple.Poco.Models.ViewModels
         public string SpendingFrom { get; set; }
         public string InternalCategory { get; set; }
 
-        public TransactionListVM(TransactionDM x, string accountName = "")
+        public TransactionListVM(TransactionDM x)
         {
             AccountId = x.AccountId;
             AccountOwner = x.AccountOwner;
-            AccountName = accountName;
+            AccountName = x.AccountName;
             Address = x.Address;
             Amount = x.Amount * -1;
             AmountDisplayValue = x.Amount.HasValue ? (x.Amount.Value * -1).ToString("c") : "$0.00";

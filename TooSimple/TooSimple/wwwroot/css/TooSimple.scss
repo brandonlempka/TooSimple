@@ -96,7 +96,12 @@ body {
     table {
         color: white !important;
     }
+}
 
+@media only screen and (max-width: 900px) {
+    .extraColumns {
+        display: none;
+    }
 }
 
 .navbar-brand {

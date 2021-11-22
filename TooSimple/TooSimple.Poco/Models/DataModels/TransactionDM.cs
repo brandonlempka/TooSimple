@@ -10,6 +10,7 @@ namespace TooSimple.Poco.Models.DataModels
         public string TransactionId { get; set; }
         public string ReferenceNumber { get; set; }
         public string AccountId { get; set; }
+        public string AccountName { get; set; }
         public string AccountOwner { get; set; }
         public decimal? Amount { get; set; }
         public DateTime? TransactionDate { get; set; }
