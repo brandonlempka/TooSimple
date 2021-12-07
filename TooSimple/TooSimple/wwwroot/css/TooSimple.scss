@@ -96,6 +96,15 @@ body {
     table {
         color: white !important;
     }
+
+    .card-header {
+        background-color: #222;
+    }
+
+    .card {
+        background-color: #303030;
+        border: 1px solid #111;
+    }
 }
 
 @media only screen and (max-width: 900px) {

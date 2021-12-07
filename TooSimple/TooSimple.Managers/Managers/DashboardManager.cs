@@ -482,6 +482,19 @@ namespace TooSimple.Managers.Managers
 
             var dataModel = await _budgetingDataAccessor.GetGoalListDMAsync(userId);
 
+            var nextContribution = dataModel.Goals
+                .Where(goal => goal.ExpenseFlag == isExpense 
+                    && !goal.Paused 
+                    && goal.NextContributionAmount != 0)
+                .Min(goal => goal.NextContributionDate);
+
+            var totalContribution = dataModel.Goals
+                .Where(goal => goal.NextContributionDate.Date == nextContribution.Date 
+                    && goal.ExpenseFlag == isExpense 
+                    && !goal.Paused 
+                    && goal.NextContributionAmount != 0)
+                .Sum(goal => goal.NextContributionAmount);
+            
             var viewModel = new DashboardGoalListVM
             {
                 Goals = dataModel.Goals.Where(goal => goal.ExpenseFlag == isExpense)
@@ -500,7 +513,9 @@ namespace TooSimple.Managers.Managers
                         : (((x.AmountContributed - x.AmountSpent) / x.GoalAmount) * 100).ToString() + "%",
                     NextContributionAmount = x.NextContributionAmount.ToString("c"),
                     NextContributionDate = x.NextContributionDate.DateToCentral().ToString("MM/dd")
-                }).OrderBy(g => g.GoalName)
+                }).OrderBy(g => g.GoalName),
+                NextContributionDate = nextContribution.DateToCentral().ToShortDateString(),
+                NextContributionTotal = totalContribution.ToString("c")
             };
 
             return viewModel;
