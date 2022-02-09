@@ -133,9 +133,12 @@ namespace TooSimple.Managers.Managers
             }
         }
 
-        public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser)
-        {
-            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+        public async Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser, string apiUserId = "")
+        { 
+            var userId = !string.IsNullOrWhiteSpace(apiUserId)
+                ? apiUserId
+                : currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId);
 
             if (!dataModel.Accounts.Any())
@@ -215,7 +218,7 @@ namespace TooSimple.Managers.Managers
             {
                 CurrentBalance = currentBalance,
                 AmountDisplayValue = currentBalance?.ToString("c") ?? "$0.00",
-                TransactionTableVM = await GetTransactionTableVMAsync(currentUser, 1),
+                TransactionTableVM = await GetTransactionTableVMAsync(currentUser, 1, apiUserId),
                 LastUpdated = dataModel.Accounts.Max(a => a.LastUpdated)?.DateToCentral().ToString("MM/dd/yyyy hh:mm tt")
             };
 
@@ -242,9 +245,12 @@ namespace TooSimple.Managers.Managers
             return viewModel;
         }
 
-        public async Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1)
+        public async Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1, string apiUserId = "")
         {
-            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userId = !string.IsNullOrWhiteSpace(apiUserId)
+                ? apiUserId
+                : currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
             var resultsPerPage = 25;
             var accountList = await _accountDataAccessor.GetTransactionListAsync(userId, pageNumber, resultsPerPage);
             var transactions = accountList.Transactions.Select(x => new TransactionListVM(x));

@@ -20,6 +20,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.13" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
@@ -40,6 +41,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\TooSimple.ApiControllers\TooSimple.ApiControllers.csproj" />
     <ProjectReference Include="..\TooSimple.Managers\TooSimple.Managers.csproj" />
     <ProjectReference Include="..\TooSimple.Poco\TooSimple.Poco.csproj" />
   </ItemGroup>

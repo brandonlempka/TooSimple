@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TooSimple.Managers\TooSimple.Managers.csproj" />
+    <ProjectReference Include="..\TooSimple.Poco\TooSimple.Poco.csproj" />
   </ItemGroup>
 
 </Project>

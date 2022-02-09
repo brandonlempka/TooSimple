@@ -14,8 +14,8 @@ namespace TooSimple.Managers.Managers
 {
     public interface IDashboardManager
     {
-        Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser);
-        Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1);
+        Task<DashboardVM> GetDashboardVMAsync(ClaimsPrincipal currentUser, string apiUserId = "");
+        Task<TransactionTableVM> GetTransactionTableVMAsync(ClaimsPrincipal currentUser, int pageNumber = 1, string apiUserId = "");
         Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser);
         Task<StatusRM> PublicTokenExchangeAsync(PublicTokenRM dataModel, ClaimsPrincipal currentUser);
         Task<StatusRM> PublicTokenUpdateAsync(PublicTokenUpdateAM actionModel, ClaimsPrincipal currentUser);
