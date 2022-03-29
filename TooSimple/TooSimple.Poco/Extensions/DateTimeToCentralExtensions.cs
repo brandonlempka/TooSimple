@@ -9,7 +9,7 @@ namespace TooSimple.Poco.Extensions
     {
         public static DateTime DateToCentral(this DateTime dateTime)
         {
-            TimeZoneInfo timezoneId;
+            TimeZoneInfo timezoneId = null;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -23,7 +23,7 @@ namespace TooSimple.Poco.Extensions
             {
                 timezoneId = TimeZoneInfo.FindSystemTimeZoneById("America/Chicago");
             }
-            return TimeZoneInfo.ConvertTimeFromUtc(dateTime, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+            return TimeZoneInfo.ConvertTimeFromUtc(dateTime, timezoneId);
         }
     }
 }

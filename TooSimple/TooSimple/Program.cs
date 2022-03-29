@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ namespace TooSimple
     {
         public static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
             CreateHostBuilder(args).Build().Run();
         }
 
