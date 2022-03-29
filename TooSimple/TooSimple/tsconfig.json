@@ -7,9 +7,10 @@
     "sourceMap": true,
     "target": "ES6",
     "skipLibCheck": true,
-    "outDir": "wwwroot/js"
+    "outDir": "wwwroot/js",
+    "rootDir": "./"
   },
   "include": [
-    "scripts/**/*"
+    "Scripts/**/*"
   ]
 }

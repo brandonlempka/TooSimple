@@ -18,6 +18,7 @@ using TooSimple.DataAccessors.Data;
 using TooSimple.DataAccessors.Plaid;
 using TooSimple.DataAccessors.TooSimple;
 using WebEssentials.AspNetCore.Pwa;
+using Pomelo.EntityFrameworkCore.MySql;
 
 namespace TooSimple
 {
@@ -34,8 +35,8 @@ namespace TooSimple
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseMySql(
+                    Configuration.GetConnectionString("PiConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
