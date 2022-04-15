@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +19,8 @@ using TooSimple.DataAccessors.Plaid;
 using TooSimple.DataAccessors.TooSimple;
 using WebEssentials.AspNetCore.Pwa;
 using Pomelo.EntityFrameworkCore.MySql;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
 
 namespace TooSimple
 {
@@ -39,6 +41,9 @@ namespace TooSimple
                     Configuration.GetConnectionString("PiConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(@"keystore"));
 
             services.Configure<AppSettings>(options => Configuration.GetSection("AppSettings").Bind(options));
             
