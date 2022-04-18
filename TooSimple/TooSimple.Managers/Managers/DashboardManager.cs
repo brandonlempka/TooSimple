@@ -273,9 +273,18 @@ namespace TooSimple.Managers.Managers
         /// </summary>
         /// <param name="currentUser">current User provided by controller</param>
         /// <returns></returns>
-        public async Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal currentUser)
+        public async Task<StatusRM> UpdatePlaidAccountDataAsync(ClaimsPrincipal? currentUser = null)
         {
-            var userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userId = string.Empty;
+            if (currentUser != null)
+            {
+                userId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            }
+            else
+            {
+                userId = "1d4c76c2-148b-47b5-9a53-c29f3a233c80";
+            }
+
             var dataModel = await _accountDataAccessor.GetAccountDMAsync(userId); 
             var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.UtcNow.AddMinutes(-15) && !a.ReLoginRequired);
             

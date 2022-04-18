@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TooSimple.Managers.Managers;
 using TooSimple.Poco.Models.ViewModels;
@@ -26,6 +27,14 @@ namespace TooSimple.ApiControllers.Controllers
 
             var results = await _dashboardManager.GetDashboardVMAsync(new ClaimsPrincipal(), userAccountId);
             return results;
+        }
+
+        [HttpPost("webhookHandler")]
+        public async Task<ActionResult> WebhookHandler([FromBody] JsonElement json)
+        {
+            _ = await _dashboardManager.UpdatePlaidAccountDataAsync();
+
+            return Ok();
         }
     }
 }
