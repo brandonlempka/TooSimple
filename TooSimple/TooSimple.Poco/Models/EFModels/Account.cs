@@ -16,6 +16,7 @@ namespace TooSimple.Poco.Models.EFModels
         public string NickName { get; set; }
         public decimal? CurrentBalance { get; set; }
         public decimal? AvailableBalance { get; set; }
+        public decimal? CreditLimit { get; set; }
         public string CurrencyCode { get; set; }
         public string AccessToken { get; set; }
         public bool UseForBudgeting { get; set; }

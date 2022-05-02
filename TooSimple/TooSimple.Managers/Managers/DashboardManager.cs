@@ -289,7 +289,8 @@ namespace TooSimple.Managers.Managers
             var outdatedAccounts = dataModel.Accounts.Where(a => a.LastUpdated < DateTime.UtcNow.AddMinutes(-15) && !a.ReLoginRequired);
             
             var responseList = new List<StatusRM>();
-            var accountGroup = outdatedAccounts.Where(y => !y.ReLoginRequired).GroupBy(x => x.AccessToken,
+            var accountGroup = outdatedAccounts.Where(y => !y.ReLoginRequired)
+                .GroupBy(x => x.AccessToken,
                 x => x.AccountId,
                 (key, y) => new { AccessToken = key, AccountIds = y.ToList() });
 
@@ -587,7 +588,8 @@ namespace TooSimple.Managers.Managers
                 FundingScheduleOptions = new List<SelectListItem>(),
                 RecurrenceTimeFrameOptions = new List<SelectListItem>(),
                 Paused = existingAccount.Paused,
-                AutoSpendMerchantName = existingAccount.AutoSpendMerchantName
+                AutoSpendMerchantName = existingAccount.AutoSpendMerchantName,
+                AutoRefill = existingAccount.AutoRefill
             };
 
             if (fundingSchedules.FundingSchedules.Any())

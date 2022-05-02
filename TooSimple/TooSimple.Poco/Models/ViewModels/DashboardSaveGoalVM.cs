@@ -20,6 +20,7 @@ namespace TooSimple.Poco.Models.ViewModels
         public DateTime? DesiredCompletionDate { get; set; }
         public string AutoSpendMerchantName { get; set; }
         public bool Paused { get; set; }
+        public bool AutoRefill { get; set; }
         public List<SelectListItem> FundingScheduleOptions { get; set; }
         public string FundingScheduleId { get; set; }
         public bool ExpenseFlag { get; set; }
